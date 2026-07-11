@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>TorrentHub - Free Torrent Index</title>
+    <style>
+        body { 
+            font-family: 'Segoe UI', Arial, sans-serif; 
+            background: #0d1117; 
+            color: #c9d1d9; 
+            margin: 0; 
+            padding: 0;
+        }
+        .header { 
+            background: #161b22; 
+            padding: 20px 40px; 
+            border-bottom: 2px solid #ff6b00;
+        }
+        .header h1 { 
+            color: #ff6b00; 
+            margin: 0; 
+            font-size: 28px;
+        }
+        .header span { 
+            color: #8b949e; 
+            font-size: 14px;
+        }
+        .nav { 
+            background: #21262d; 
+            padding: 12px 40px; 
+        }
+        .nav a { 
+            color: #ff6b00; 
+            text-decoration: none; 
+            margin-right: 25px; 
+            font-weight: 500;
+        }
+        .nav a:hover { 
+            color: #fff; 
+        }
+        .container { 
+            padding: 30px 40px; 
+            max-width: 1200px; 
+        }
+        .search-box { 
+            background: #21262d; 
+            padding: 20px; 
+            border-radius: 8px; 
+            margin-bottom: 30px;
+        }
+        .search-box input { 
+            width: 70%; 
+            padding: 12px; 
+            border: 1px solid #30363d; 
+            background: #0d1117; 
+            color: #fff; 
+            border-radius: 6px; 
+            font-size: 16px;
+        }
+        .search-box button { 
+            padding: 12px 24px; 
+            background: #ff6b00; 
+            color: #fff; 
+            border: none; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            font-size: 16px; 
+            margin-left: 10px;
+        }
+        .torrent { 
+            background: #161b22; 
+            padding: 18px; 
+            margin: 12px 0; 
+            border-radius: 8px; 
+            border-left: 3px solid #ff6b00;
+        }
+        .torrent a { 
+            color: #58a6ff; 
+            font-size: 18px; 
+            text-decoration: none; 
+            font-weight: 600;
+        }
+        .torrent a:hover { 
+            text-decoration: underline; 
+        }
+        .meta { 
+            color: #8b949e; 
+            font-size: 14px; 
+            margin-top: 8px; 
+        }
+        .meta span { 
+            margin-right: 20px; 
+        }
+        .seeders { 
+            color: #3fb950; 
+        }
+        .leechers { 
+            color: #f85149; 
+        }
+        .category { 
+            display: inline-block; 
+            background: #21262d; 
+            padding: 4px 12px; 
+            border-radius: 12px; 
+            font-size: 12px; 
+            margin-right: 10px;
+        }
+        .footer { 
+            text-align: center; 
+            padding: 40px; 
+            color: #484f58; 
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🔥 TorrentHub</h1>
+        <span>A free torrent index and community forum</span>
+    </div>
+    
+    <div class="nav">
+        <a href="#">Torrents</a>
+        <a href="#">Forum</a>
+        <a href="#">Upload</a>
+        <a href="#">Categories</a>
+        <a href="#">Top 100</a>
+    </div>
+
+    <div class="container">
+        <div class="search-box">
+            <input type="text" placeholder="Search torrents...">
+            <button>Search</button>
+        </div>
+
+        <div class="torrent">
+            <span class="category">Software</span>
+            <a href="#">Ubuntu 24.04 LTS - Desktop ISO</a>
+            <div class="meta">
+                <span>📦 4.5 GB</span>
+                <span class="seeders">🟢 1,240 seeders</span>
+                <span class="leechers">🔴 45 leechers</span>
+                <span>👤 linuxfan</span>
+                <span>📅 2 hours ago</span>
+            </div>
+        </div>
+
+        <div class="torrent">
+            <span class="category">Software</span>
+            <a href="#">Blender 4.2 - 3D Creation Suite</a>
+            <div class="meta">
+                <span>📦 890 MB</span>
+                <span class="seeders">🟢 856 seeders</span>
+                <span class="leechers">🔴 12 leechers</span>
+                <span>👤 designpro</span>
+                <span>📅 5 hours ago</span>
+            </div>
+        </div>
+
+        <div class="torrent">
+            <span class="category">Software</span>
+            <a href="#">LibreOffice 24.2 - Office Suite</a>
+            <div class="meta">
+                <span>📦 320 MB</span>
+                <span class="seeders">🟢 2,100 seeders</span>
+                <span class="leechers">🔴 89 leechers</span>
+                <span>👤 opensource</span>
+                <span>📅 1 day ago</span>
+            </div>
+        </div>
+
+        <div class="torrent">
+            <span class="category">Games</span>
+            <a href="#">SuperTuxKart - Open Source Racing</a>
+            <div class="meta">
+                <span>📦 650 MB</span>
+                <span class="seeders">🟢 432 seeders</span>
+                <span class="leechers">🔴 23 leechers</span>
+                <span>👤 gamedev</span>
+                <span>📅 3 days ago</span>
+            </div>
+        </div>
+
+        <div class="torrent">
+            <span class="category">Movies</span>
+            <a href="#">Big Buck Bunny - Open Movie (1080p)</a>
+            <div class="meta">
+                <span>📦 1.2 GB</span>
+                <span class="seeders">🟢 5,600 seeders</span>
+                <span class="leechers">🔴 340 leechers</span>
+                <span>👤 blenderorg</span>
+                <span>📅 1 week ago</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>TorrentHub 2026 — Free & Open Source Torrent Index</p>
+        <p>This site does not host files. We only index torrent metadata.</p>
+    </div>
+</body>
+</html>
