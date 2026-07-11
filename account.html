@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Account - TorrentHub</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background: #e8e4e0; 
+            color: #333;
+        }
+        
+        .header { 
+            background: #ff6b00; 
+            padding: 15px 20px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+        }
+        .header h1 { 
+            color: #fff; 
+            font-size: 24px;
+        }
+        .header h1 a { 
+            color: #fff; 
+            text-decoration: none;
+        }
+        .nav { 
+            background: #2c2c2c; 
+            padding: 10px 20px;
+        }
+        .nav a { 
+            color: #ccc; 
+            text-decoration: none; 
+            margin-right: 20px; 
+            font-size: 14px;
+        }
+        .nav a:hover { 
+            color: #ff6b00;
+        }
+        
+        .container { 
+            max-width: 800px; 
+            margin: 30px auto; 
+            padding: 0 20px;
+        }
+        
+        .account-box { 
+            background: #fff; 
+            padding: 30px; 
+            border-radius: 8px; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1); 
+            margin-bottom: 20px;
+        }
+        .account-box h3 { 
+            color: #333; 
+            margin-bottom: 20px; 
+            border-bottom: 2px solid #ff6b00; 
+            padding-bottom: 10px;
+        }
+        
+        .info-row { 
+            display: flex; 
+            justify-content: space-between; 
+            padding: 12px 0; 
+            border-bottom: 1px solid #eee;
+        }
+        .info-row label { 
+            font-weight: 600; 
+            color: #555;
+        }
+        .info-row span { 
+            color: #333;
+        }
+        
+        .btn { 
+            padding: 10px 20px; 
+            border: none; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            font-weight: 600; 
+            margin-right: 10px; 
+            margin-top: 15px;
+        }
+        .btn-orange { 
+            background: #ff6b00; 
+            color: #fff;
+        }
+        .btn-red { 
+            background: #dc3545; 
+            color: #fff;
+        }
+        .btn-gray { 
+            background: #6c757d; 
+            color: #fff;
+        }
+        
+        .warning-box { 
+            background: #f8d7da; 
+            border: 1px solid #f5c6cb; 
+            color: #721c24; 
+            padding: 20px; 
+            border-radius: 4px; 
+            margin-top: 20px; 
+            display: none;
+        }
+        .warning-box.active { 
+            display: block;
+        }
+        .warning-box h4 { 
+            margin-bottom: 10px;
+        }
+        .warning-box button { 
+            margin-top: 10px;
+        }
+        
+        .alt-accounts { 
+            margin-top: 20px;
+        }
+        .alt-account { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            padding: 12px; 
+            border: 1px solid #ddd; 
+            border-radius: 4px; 
+            margin-bottom: 10px; 
+            background: #f9f9f9;
+        }
+        .alt-account button { 
+            padding: 6px 12px; 
+            background: #dc3545; 
+            color: #fff; 
+            border: none; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1><a href="index.html">🔥 TorrentHub</a></h1>
+    </div>
+    
+    <div class="nav">
+        <a href="index.html">← Home</a>
+        <a href="#">My Torrents</a>
+        <a href="#">My Posts</a>
+        <a href="#">Settings</a>
+        <a href="#">Log Out</a>
+    </div>
+
+    <div class="container">
+        
+        <!-- Profile Info -->
+        <div class="account-box">
+            <h3>👤 My Profile</h3>
+            <div class="info-row">
+                <label>Username</label>
+                <span>linuxfan</span>
+            </div>
+            <div class="info-row">
+                <label>Nickname</label>
+                <span>Linux Fanatic</span>
+            </div>
+            <div class="info-row">
+                <label>Email</label>
+                <span>linuxfan@email.com</span>
+            </div>
+            <div class="info-row">
+                <label>Member Since</label>
+                <span>July 11, 2026</span>
+            </div>
+            <div class="info-row">
+                <label>Reputation</label>
+                <span>⭐ 1,240 points</span>
+            </div>
+            <div class="info-row">
+                <label>2-Step Verification</label>
+                <span>✅ Enabled (Email)</span>
+            </div>
+            
+            <button class="btn btn-orange">Edit Profile</button>
+            <button class="btn btn-gray">Change Password</button>
+        </div>
+
+        <!-- Alt Accounts -->
+        <div class="account-box">
+            <h3>👥 Alternative Accounts</h3>
+            <p style="color: #666; margin-bottom: 15px; font-size: 14px;">You can create up to 3 alternate accounts for different purposes.</p>
+            
+            <div class="alt-accounts">
+                <div class="alt-account">
+                    <div>
+                        <strong>linuxfan_alt1</strong> <span style="color: #999; font-size: 12px;">(Uploader)</span>
+                    </div>
+                    <button onclick="deleteAlt(this)">Delete</button>
+                </div>
+            </div>
+            
+            <button class="btn btn-orange" style="margin-top: 15px;">+ Create Alt Account</button>
+        </div>
+
+        <!-- Danger Zone -->
+        <div class="account-box">
+            <h3>⚠️ Danger Zone</h3>
+            <button class="btn btn-red" onclick="showDeleteWarning()">Delete My Account</button>
+            
+            <div class="warning-box" id="deleteWarning">
+                <h4>🚨 Are you absolutely sure?</h4>
+                <p>This will permanently delete:</p>
+                <ul style="margin: 10px 0 10px 20px;">
+                    <li>Your account and all data</li>
+                    <li>All your torrent uploads</li>
+                    <li>All your forum posts and comments</li>
+                    <li>Your reputation and history</li>
+                </ul>
+                <p><strong>This cannot be undone!</strong></p>
+                <p style="margin-top: 10px;">Type <code>DELETE</code> to confirm:</p>
+                <input type="text" placeholder="Type DELETE here" style="width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #dc3545; border-radius: 4px;">
+                <button class="btn btn-red">I understand, delete everything</button>
+                <button class="btn btn-gray" onclick="hideDeleteWarning()">Cancel</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        function showDeleteWarning() {
+            document.getElementById('deleteWarning').classList.add('active');
+        }
+        function hideDeleteWarning() {
+            document.getElementById('deleteWarning').classList.remove('active');
+        }
+        function deleteAlt(btn) {
+            if(confirm('Delete this alt account? This cannot be undone.')) {
+                btn.parentElement.remove();
+            }
+        }
+    </script>
+
+</body>
+</html>
