@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TorrentHub - RuTracker Style Forum & Torrent Index</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background: #e8e4e0; 
+            color: #333; 
+            line-height: 1.6;
+        }
+        
+        .header { 
+            background: #ff6b00; 
+            padding: 15px 20px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+        }
+        .header h1 { 
+            color: #fff; 
+            font-size: 24px; 
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        }
+        .header h1 a { 
+            color: #fff; 
+            text-decoration: none; 
+        }
+        
+        .user-panel { 
+            display: flex; 
+            gap: 10px; 
+            align-items: center;
+        }
+        .user-panel a { 
+            background: #fff; 
+            color: #ff6b00; 
+            border: none; 
+            padding: 8px 16px; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            font-weight: 600; 
+            text-decoration: none; 
+            font-size: 14px;
+        }
+        .user-panel a:hover { 
+            background: #f0f0f0; 
+        }
+        
+        .nav { 
+            background: #2c2c2c; 
+            padding: 10px 20px; 
+            display: flex; 
+            gap: 20px;
+        }
+        .nav a { 
+            color: #ccc; 
+            text-decoration: none; 
+            font-size: 14px; 
+            font-weight: 500;
+        }
+        .nav a:hover { 
+            color: #ff6b00; 
+        }
+        .nav a.active { 
+            color: #ff6b00; 
+        }
+        
+        .search-bar { 
+            background: #d4d0cc; 
+            padding: 15px 20px; 
+            display: flex; 
+            gap: 10px;
+        }
+        .search-bar input { 
+            flex: 1; 
+            padding: 10px 15px; 
+            border: 1px solid #bbb; 
+            border-radius: 4px; 
+            font-size: 14px;
+        }
+        .search-bar button { 
+            background: #ff6b00; 
+            color: #fff; 
+            border: none; 
+            padding: 10px 20px; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            font-weight: 600;
+        }
+        
+        .container { 
+            max-width: 1200px; 
+            margin: 0 auto; 
+            padding: 20px;
+        }
+        
+        .category-block { 
+            margin-bottom: 25px; 
+            border: 1px solid #ccc; 
+            background: #fff;
+        }
+        .category-header { 
+            background: #4a4a4a; 
+            color: #fff; 
+            padding: 10px 15px; 
+            font-weight: 600; 
+            font-size: 14px;
+        }
+        .forum-row { 
+            display: flex; 
+            padding: 12px 15px; 
+            border-bottom: 1px solid #eee; 
+            align-items: center;
+        }
+        .forum-row:hover { 
+            background: #f5f5f5; 
+        }
+        .forum-icon { 
+            width: 40px; 
+            height: 40px; 
+            background: #ff6b00; 
+            border-radius: 50%; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            color: #fff; 
+            font-size: 18px; 
+            margin-right: 15px;
+        }
+        .forum-info { 
+            flex: 1;
+        }
+        .forum-info a { 
+            color: #0066cc; 
+            font-weight: 600; 
+            text-decoration: none; 
+            font-size: 15px;
+        }
+        .forum-info a:hover { 
+            text-decoration: underline; 
+        }
+        .forum-info p { 
+            color: #666; 
+            font-size: 12px; 
+            margin-top: 2px;
+        }
+        .forum-stats { 
+            text-align: center; 
+            width: 80px;
+        }
+        .forum-stats .num { 
+            font-weight: 700; 
+            color: #333; 
+            font-size: 16px;
+        }
+        .forum-stats .label { 
+            font-size: 11px; 
+            color: #999;
+        }
+        
+        .torrent-list { 
+            margin-top: 20px;
+        }
+        .torrent-header { 
+            background: #4a4a4a; 
+            color: #fff; 
+            padding: 10px 15px; 
+            font-weight: 600; 
+            display: flex; 
+            justify-content: space-between;
+        }
+        .torrent-row { 
+            display: flex; 
+            padding: 12px 15px; 
+            border-bottom: 1px solid #ddd; 
+            background: #fff; 
+            align-items: center;
+        }
+        .torrent-row:hover { 
+            background: #f9f9f9; 
+        }
+        .torrent-row .title { 
+            flex: 1;
+        }
+        .torrent-row .title a { 
+            color: #0066cc; 
+            text-decoration: none; 
+            font-weight: 500;
+        }
+        .torrent-row .title a:hover { 
+            text-decoration: underline; 
+        }
+        .torrent-row .meta { 
+            display: flex; 
+            gap: 20px; 
+            font-size: 13px; 
+            color: #666;
+        }
+        .seeders { 
+            color: #28a745; 
+            font-weight: 600;
+        }
+        .leechers { 
+            color: #dc3545; 
+            font-weight: 600;
+        }
+        .size { 
+            color: #666; 
+            width: 80px; 
+            text-align: right;
+        }
+        
+        .footer { 
+            background: #2c2c2c; 
+            color: #999; 
+            text-align: center; 
+            padding: 20px; 
+            margin-top: 40px; 
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1><a href="index.html">🔥 TorrentHub</a></h1>
+        <div class="user-panel">
+            <a href="login.html">Log In</a>
+            <a href="login.html">Register</a>
+        </div>
+    </div>
+
+    <div class="nav">
+        <a href="index.html" class="active">Home</a>
+        <a href="#">Torrents</a>
+        <a href="#">Forum</a>
+        <a href="#">Upload</a>
+        <a href="#">Categories</a>
+        <a href="#">Top 100</a>
+        <a href="#">Rules</a>
+        <a href="#">Help</a>
+    </div>
+
+    <div class="search-bar">
+        <input type="text" placeholder="Search torrents, forums, users...">
+        <button>Search</button>
+    </div>
+
+    <div class="container">
+
+        <div class="category-block">
+            <div class="category-header">📁 Main Categories</div>
+            
+            <div class="forum-row">
+                <div class="forum-icon">💿</div>
+                <div class="forum-info">
+                    <a href="#">Software & Applications</a>
+                    <p>Operating systems, productivity tools, development software</p>
+                </div>
+                <div class="forum-stats">
+                    <div class="num">15,420</div>
+                    <div class="label">Torrents</div>
+                </div>
+            </div>
+
+            <div class="forum-row">
+                <div class="forum-icon">🎬</div>
+                <div class="forum-info">
+                    <a href="#">Movies & TV Shows</a>
+                    <p>Films, series, documentaries, anime</p>
+                </div>
+                <div class="forum-stats">
+                    <div class="num">42,891</div>
+                    <div class="label">Torrents</div>
+                </div>
+            </div>
+
+            <div class="forum-row">
+                <div class="forum-icon">🎮</div>
+                <div class="forum-info">
+                    <a href="#">Games</a>
+                    <p>PC games, console games, mobile games, mods</p>
+                </div>
+                <div class="forum-stats">
+                    <div class="num">8,234</div>
+                    <div class="label">Torrents</div>
+                </div>
+            </div>
+
+            <div class="forum-row">
+                <div class="forum-icon">🎵</div>
+                <div class="forum-info">
+                    <a href="#">Music & Audio</a>
+                    <p>Albums, singles, soundtracks, podcasts</p>
+                </div>
+                <div class="forum-stats">
+                    <div class="num">28,567</div>
+                    <div class="label">Torrents</div>
+                </div>
+            </div>
+
+            <div class="forum-row">
+                <div class="forum-icon">📚</div>
+                <div class="forum-info">
+                    <a href="#">Books & Education</a>
+                    <p>E-books, courses, tutorials, academic papers</p>
+                </div>
+                <div class="forum-stats">
+                    <div class="num">12,103</div>
+                    <div class="label">Torrents</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="torrent-list">
+            <div class="torrent-header">
+                <span>🔥 Latest Torrents</span>
+                <span style="font-size: 12px; font-weight: normal;">View All →</span>
+            </div>
+
+            <div class="torrent-row">
+                <div class="title">
+                    <a href="#">Ubuntu 24.04 LTS - Desktop ISO (amd64)</a>
+                </div>
+                <div class="meta">
+                    <span class="seeders">🟢 1,240</span>
+                    <span class="leechers">🔴 45</span>
+                    <span>👤 linuxfan</span>
+                </div>
+                <div class="size">4.5 GB</div>
+            </div>
+
+            <div class="torrent-row">
+                <div class="title">
+                    <a href="#">Blender 4.2 - 3D Creation Suite (Windows/Mac/Linux)</a>
+                </div>
+                <div class="meta">
+                    <span class="seeders">🟢 856</span>
+                    <span class="leechers">🔴 12</span>
+                    <span>👤 designpro</span>
+                </div>
+                <div class="size">890 MB</div>
+            </div>
+
+            <div class="torrent-row">
+                <div class="title">
+                    <a href="#">The Matrix (1999) - 1080p BluRay x264</a>
+                </div>
+                <div class="meta">
+                    <span class="seeders">🟢 3,420</span>
+                    <span class="leechers">🔴 156</span>
+                    <span>👤 moviebuff</span>
+                </div>
+                <div class="size">12.1 GB</div>
+            </div>
+
+            <div class="torrent-row">
+                <div class="title">
+                    <a href="#">SuperTuxKart 1.4 - Open Source Racing Game</a>
+                </div>
+                <div class="meta">
+                    <span class="seeders">🟢 432</span>
+                    <span class="leechers">🔴 23</span>
+                    <span>👤 gamedev</span>
+                </div>
+                <div class="size">650 MB</div>
+            </div>
+
+            <div class="torrent-row">
+                <div class="title">
+                    <a href="#">Complete Python Course 2026 - From Zero to Hero</a>
+                </div>
+                <div class="meta">
+                    <span class="seeders">🟢 8,900</span>
+                    <span class="leechers">🔴 567</span>
+                    <span>👤 codemaster</span>
+                </div>
+                <div class="size">22.3 GB</div>
+            </div>
+        </div>
+
+        <div class="category-block" style="margin-top: 25px;">
+            <div class="category-header">💬 Latest Forum Discussions</div>
+            
+            <div class="forum-row">
+                <div class="forum-icon">💬</div>
+                <div class="forum-info">
+                    <a href="#">How to safely download torrents in 2026 - Complete Guide</a>
+                    <p>By safetyfirst • 45 replies • 2 hours ago</p>
+                </div>
+                <div class="forum-stats">
+                    <div class="num">1,203</div>
+                    <div class="label">Views</div>
+                </div>
+            </div>
+
+            <div class="forum-row">
+                <div class="forum-icon">💬</div>
+                <div class="forum-info">
+                    <a href="#">Request: Looking for old DOS games collection</a>
+                    <p>By retrogamer • 12 replies • 5 hours ago</p>
+                </div>
+                <div class="forum-stats">
+                    <div class="num">456</div>
+                    <div class="label">Views</div>
+                </div>
+            </div>
+
+            <div class="forum-row">
+                <div class="forum-icon">📌</div>
+                <div class="forum-info">
+                    <a href="#">[ANNOUNCEMENT] New rules for uploaders - Please read!</a>
+                    <p>By admin • 89 replies • 1 day ago</p>
+                </div>
+                <div class="forum-stats">
+                    <div class="num">15,600</div>
+                    <div class="label">Views</div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="footer">
+        <p><strong>TorrentHub</strong> — Free & Open Source Torrent Index and Community Forum</p>
+        <p>This site does not host any files. We only index torrent metadata and provide community discussion.</p>
+        <p style="margin-top: 10px;">© 2026 TorrentHub | <a href="#" style="color: #ff6b00;">Terms</a> | <a href="#" style="color: #ff6b00;">Privacy</a> | <a href="#" style="color: #ff6b00;">DMCA</a></p>
+    </div>
+
+</body>
+</html>
