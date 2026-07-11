@@ -11,7 +11,6 @@
             background: #e8e4e0; 
             color: #333;
         }
-        
         .header { 
             background: #ff6b00; 
             padding: 15px 20px; 
@@ -40,13 +39,11 @@
         .nav a:hover { 
             color: #ff6b00;
         }
-        
         .container { 
             max-width: 800px; 
             margin: 30px auto; 
             padding: 0 20px;
         }
-        
         .account-box { 
             background: #fff; 
             padding: 30px; 
@@ -60,7 +57,6 @@
             border-bottom: 2px solid #ff6b00; 
             padding-bottom: 10px;
         }
-        
         .info-row { 
             display: flex; 
             justify-content: space-between; 
@@ -74,7 +70,6 @@
         .info-row span { 
             color: #333;
         }
-        
         .btn { 
             padding: 10px 20px; 
             border: none; 
@@ -96,7 +91,6 @@
             background: #6c757d; 
             color: #fff;
         }
-        
         .warning-box { 
             background: #f8d7da; 
             border: 1px solid #f5c6cb; 
@@ -108,16 +102,6 @@
         }
         .warning-box.active { 
             display: block;
-        }
-        .warning-box h4 { 
-            margin-bottom: 10px;
-        }
-        .warning-box button { 
-            margin-top: 10px;
-        }
-        
-        .alt-accounts { 
-            margin-top: 20px;
         }
         .alt-account { 
             display: flex; 
@@ -138,6 +122,11 @@
             cursor: pointer; 
             font-size: 12px;
         }
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
     </style>
 </head>
 <body>
@@ -154,79 +143,108 @@
         <a href="#" onclick="logout()">Log Out</a>
     </div>
 
-    <div class="container">
-        
-        <div class="account-box">
-            <h3>👤 My Profile</h3>
-            <div class="info-row">
-                <label>Username</label>
-                <span>linuxfan</span>
-            </div>
-            <div class="info-row">
-                <label>Nickname</label>
-                <span>Linux Fanatic</span>
-            </div>
-            <div class="info-row">
-                <label>Email</label>
-                <span>linuxfan@email.com</span>
-            </div>
-            <div class="info-row">
-                <label>Member Since</label>
-                <span>July 11, 2026</span>
-            </div>
-            <div class="info-row">
-                <label>Reputation</label>
-                <span>⭐ 1,240 points</span>
-            </div>
-            <div class="info-row">
-                <label>2-Step Verification</label>
-                <span>✅ Enabled (Email)</span>
-            </div>
-            
-            <button class="btn btn-orange">Edit Profile</button>
-            <button class="btn btn-gray">Change Password</button>
-        </div>
-
-        <div class="account-box">
-            <h3>👥 Alternative Accounts</h3>
-            <p style="color: #666; margin-bottom: 15px; font-size: 14px;">You can create up to 3 alternate accounts for different purposes.</p>
-            
-            <div class="alt-accounts">
-                <div class="alt-account">
-                    <div>
-                        <strong>linuxfan_alt1</strong> <span style="color: #999; font-size: 12px;">(Uploader)</span>
-                    </div>
-                    <button onclick="deleteAlt(this)">Delete</button>
-                </div>
-            </div>
-            
-            <button class="btn btn-orange" style="margin-top: 15px;">+ Create Alt Account</button>
-        </div>
-
-        <div class="account-box">
-            <h3>⚠️ Danger Zone</h3>
-            <button class="btn btn-red" onclick="showDeleteWarning()">Delete My Account</button>
-            
-            <div class="warning-box" id="deleteWarning">
-                <h4>🚨 Are you absolutely sure?</h4>
-                <p>This will permanently delete:</p>
-                <ul style="margin: 10px 0 10px 20px;">
-                    <li>Your account and all data</li>
-                    <li>All your torrent uploads</li>
-                    <li>All your forum posts and comments</li>
-                    <li>Your reputation and history</li>
-                </ul>
-                <p><strong>This cannot be undone!</strong></p>
-                <p style="margin-top: 10px;">Type <code>DELETE</code> to confirm:</p>
-                <input type="text" placeholder="Type DELETE here" style="width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #dc3545; border-radius: 4px;">
-                <button class="btn btn-red">I understand, delete everything</button>
-                <button class="btn btn-gray" onclick="hideDeleteWarning()">Cancel</button>
-            </div>
-        </div>
-
+    <div class="container" id="mainContainer">
+        <!-- Content loaded by JavaScript -->
     </div>
 
     <script>
+        const API_URL = 'https://torrenthub-api.serafimkoragin-b12.workers.dev';
+
+        async function loadAccount() {
+            const container = document.getElementById('mainContainer');
+            const token = localStorage.getItem('torrenthub_token');
+            
+            if (!token) {
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            // Show loading
+            container.innerHTML = '<div class="loading">⏳ Loading your account...</div>';
+            
+            try {
+                const res = await fetch(`${API_URL}/api/auth/me`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+                
+                if (!data.success) {
+                    localStorage.removeItem('torrenthub_token');
+                    window.location.href = 'login.html';
+                    return;
+                }
+                
+                const user = data.user;
+                
+                container.innerHTML = `
+                    <div class="account-box">
+                        <h3>👤 My Profile</h3>
+                        <div class="info-row">
+                            <label>Username</label>
+                            <span>${user.username}</span>
+                        </div>
+                        <div class="info-row">
+                            <label>Nickname</label>
+                            <span>${user.nickname}</span>
+                        </div>
+                        <div class="info-row">
+                            <label>Email</label>
+                            <span>${user.email}</span>
+                        </div>
+                        <div class="info-row">
+                            <label>Member Since</label>
+                            <span>July 11, 2026</span>
+                        </div>
+                        <div class="info-row">
+                            <label>Reputation</label>
+                            <span>⭐ ${user.reputation || 0} points</span>
+                        </div>
+                        <div class="info-row">
+                            <label>2-Step Verification</label>
+                            <span>✅ Enabled (Email)</span>
+                        </div>
+                        <button class="btn btn-orange">Edit Profile</button>
+                        <button class="btn btn-gray">Change Password</button>
+                    </div>
+
+                    <div class="account-box">
+                        <h3>👥 Alternative Accounts</h3>
+                        <p style="color: #666; margin-bottom: 15px; font-size: 14px;">You can create up to 3 alternate accounts for different purposes.</p>
+                        <div class="alt-account">
+                            <div>
+                                <strong>${user.username}_alt1</strong> <span style="color: #999; font-size: 12px;">(Uploader)</span>
+                            </div>
+                            <button onclick="deleteAlt(this)">Delete</button>
+                        </div>
+                        <button class="btn btn-orange" style="margin-top: 15px;">+ Create Alt Account</button>
+                    </div>
+
+                    <div class="account-box">
+                        <h3>⚠️ Danger Zone</h3>
+                        <button class="btn btn-red" onclick="showDeleteWarning()">Delete My Account</button>
+                        <div class="warning-box" id="deleteWarning">
+                            <h4>🚨 Are you absolutely sure?</h4>
+                            <p>This will permanently delete:</p>
+                            <ul style="margin: 10px 0 10px 20px;">
+                                <li>Your account and all data</li>
+                                <li>All your torrent uploads</li>
+                                <li>All your forum posts and comments</li>
+                                <li>Your reputation and history</li>
+                            </ul>
+                            <p><strong>This cannot be undone!</strong></p>
+                            <p style="margin-top: 10px;">Type <code>DELETE</code> to confirm:</p>
+                            <input type="text" id="deleteConfirm" placeholder="Type DELETE here" style="width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #dc3545; border-radius: 4px;">
+                            <button class="btn btn-red" onclick="confirmDelete()">I understand, delete everything</button>
+                            <button class="btn btn-gray" onclick="hideDeleteWarning()">Cancel</button>
+                        </div>
+                    </div>
+                `;
+                
+            } catch (err) {
+                container.innerHTML = '<div class="loading">❌ Error loading account. <a href="login.html">Please log in again</a>.</div>';
+            }
+        }
+
         function showDeleteWarning() {
             document.getElementById('deleteWarning').classList.add('active');
         }
@@ -238,80 +256,29 @@
                 btn.parentElement.remove();
             }
         }
-    </script>
-<script>
-const API_URL = 'https://torrenthub-api.serafimkoragin-b12.workers.dev';
-
-async function loadAccount() {
-    const token = localStorage.getItem('torrenthub_token');
-    
-    if (!token) {
-        window.location.href = 'login.html';
-        return;
-    }
-    
-    try {
-        const res = await fetch(`${API_URL}/api/auth/me`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        const data = await res.json();
-        
-        if (!data.success) {
-            localStorage.removeItem('torrenthub_token');
-            window.location.href = 'login.html';
-            return;
+        function confirmDelete() {
+            const input = document.getElementById('deleteConfirm').value;
+            if (input === 'DELETE') {
+                alert('Account deletion requested. This feature will be implemented soon.');
+            } else {
+                alert('Please type DELETE to confirm.');
+            }
         }
-        
-        // Update page with real user data
-        document.querySelector('.account-box:nth-child(1)').innerHTML = `
-            <h3>👤 My Profile</h3>
-            <div class="info-row">
-                <label>Username</label>
-                <span>${data.user.username}</span>
-            </div>
-            <div class="info-row">
-                <label>Nickname</label>
-                <span>${data.user.nickname}</span>
-            </div>
-            <div class="info-row">
-                <label>Email</label>
-                <span>${data.user.email}</span>
-            </div>
-            <div class="info-row">
-                <label>Member Since</label>
-                <span>July 11, 2026</span>
-            </div>
-            <div class="info-row">
-                <label>Reputation</label>
-                <span>⭐ ${data.user.reputation || 0} points</span>
-            </div>
-            <div class="info-row">
-                <label>2-Step Verification</label>
-                <span>✅ Enabled (Email)</span>
-            </div>
-            <button class="btn btn-orange">Edit Profile</button>
-            <button class="btn btn-gray">Change Password</button>
-        `;
-        
-    } catch (err) {
-        console.error('Failed to load account:', err);
-    }
-}
 
-function logout() {
-    const token = localStorage.getItem('torrenthub_token');
-    fetch(`${API_URL}/api/auth/logout`, {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}` }
-    }).finally(() => {
-        localStorage.removeItem('torrenthub_token');
-        localStorage.removeItem('torrenthub_user');
-        window.location.href = 'index.html';
-    });
-}
+        function logout() {
+            const token = localStorage.getItem('torrenthub_token');
+            fetch(`${API_URL}/api/auth/logout`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` }
+            }).finally(() => {
+                localStorage.removeItem('torrenthub_token');
+                localStorage.removeItem('torrenthub_user');
+                window.location.href = 'index.html';
+            });
+        }
 
-// Load account on page load
-loadAccount();
-</script>
+        // Load immediately
+        loadAccount();
+    </script>
 </body>
 </html>
