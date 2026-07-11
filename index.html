@@ -480,6 +480,133 @@
         <p>This site does not host any files. We only index torrent metadata and provide community discussion.</p>
         <p style="margin-top: 10px;">© 2026 TorrentHub | <a href="#" style="color: #ff6b00;">Terms</a> | <a href="#" style="color: #ff6b00;">Privacy</a> | <a href="#" style="color: #ff6b00;">DMCA</a></p>
     </div>
+<script>
+const API_URL = 'https://torrenthub-api.serafimkoragin-b12.workers.dev';
 
+async function checkLogin() {
+    const token = localStorage.getItem('torrenthub_token');
+    const userPanel = document.getElementById('userPanel');
+    
+    if (!token) {
+        userPanel.innerHTML = `
+            <a href="login.html">Log In</a>
+            <a href="login.html">Register</a>
+        `;
+        return;
+    }
+    
+    try {
+        const res = await fetch(`${API_URL}/api/auth/me`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        
+        if (data.success) {
+            userPanel.innerHTML = `
+                <div class="user-dropdown">
+                    <button class="user-dropdown-btn">👤 ${data.user.nickname}</button>
+                    <div class="user-dropdown-content">
+                        <div class="user-info">⭐ ${data.user.reputation} pts</div>
+                        <a href="account.html">👤 My Account</a>
+                        <a href="#" onclick="toggleTheme()">🎨 Theme</a>
+                        <a href="#" onclick="toggleAnimations()">✨ Animations</a>
+                        <a href="#" onclick="changeBackground()">🖼️ Background</a>
+                        <a href="#" onclick="logout()">🚪 Log Out</a>
+                    </div>
+                </div>
+            `;
+        } else {
+            localStorage.removeItem('torrenthub_token');
+            checkLogin();
+        }
+    } catch (err) {
+        userPanel.innerHTML = `
+            <a href="login.html">Log In</a>
+            <a href="login.html">Register</a>
+        `;
+    }
+}
+
+function logout() {
+    const token = localStorage.getItem('torrenthub_token');
+    fetch(`${API_URL}/api/auth/logout`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` }
+    }).finally(() => {
+        localStorage.removeItem('torrenthub_token');
+        localStorage.removeItem('torrenthub_user');
+        window.location.reload();
+    });
+}
+
+// Theme system
+let currentTheme = localStorage.getItem('torrenthub_theme') || 'light';
+let animationsEnabled = localStorage.getItem('torrenthub_animations') !== 'false';
+let currentBg = localStorage.getItem('torrenthub_bg') || 'none';
+
+function applyTheme() {
+    if (currentTheme === 'dark') {
+        document.body.style.background = '#1a1a1a';
+        document.body.style.color = '#fff';
+        document.querySelectorAll('.category-block, .torrent-row, .forum-row').forEach(el => {
+            el.style.background = '#2a2a2a';
+            el.style.color = '#fff';
+        });
+    } else if (currentTheme === 'orange') {
+        document.body.style.background = '#fff5eb';
+        document.querySelector('.header').style.background = '#ff8533';
+    } else {
+        // Light default
+        document.body.style.background = '#e8e4e0';
+        document.body.style.color = '#333';
+    }
+}
+
+function toggleTheme() {
+    const themes = ['light', 'dark', 'orange'];
+    const idx = themes.indexOf(currentTheme);
+    currentTheme = themes[(idx + 1) % themes.length];
+    localStorage.setItem('torrenthub_theme', currentTheme);
+    applyTheme();
+}
+
+function toggleAnimations() {
+    animationsEnabled = !animationsEnabled;
+    localStorage.setItem('torrenthub_animations', animationsEnabled);
+    if (animationsEnabled) {
+        document.body.style.transition = 'all 0.3s ease';
+        alert('Animations enabled!');
+    } else {
+        document.body.style.transition = 'none';
+        alert('Animations disabled!');
+    }
+}
+
+function changeBackground() {
+    const bgs = ['none', 'https://images.unsplash.com/photo-1557683316-973673baf926?w=1920', 'https://images.unsplash.com/photo-1579546929518-9e396f3cc809?w=1920'];
+    const idx = bgs.indexOf(currentBg);
+    currentBg = bgs[(idx + 1) % bgs.length];
+    localStorage.setItem('torrenthub_bg', currentBg);
+    
+    if (currentBg === 'none') {
+        document.body.style.backgroundImage = 'none';
+    } else {
+        document.body.style.backgroundImage = `url(${currentBg})`;
+        document.body.style.backgroundSize = 'cover';
+        document.body.style.backgroundAttachment = 'fixed';
+    }
+}
+
+// Apply saved settings on load
+applyTheme();
+if (!animationsEnabled) document.body.style.transition = 'none';
+if (currentBg !== 'none') {
+    document.body.style.backgroundImage = `url(${currentBg})`;
+    document.body.style.backgroundSize = 'cover';
+    document.body.style.backgroundAttachment = 'fixed';
+}
+
+checkLogin();
+</script>
 </body>
 </html>
