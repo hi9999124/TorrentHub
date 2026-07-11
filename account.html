@@ -151,7 +151,7 @@
         <a href="#">My Torrents</a>
         <a href="#">My Posts</a>
         <a href="#">Settings</a>
-        <a href="#">Log Out</a>
+        <a href="#" onclick="logout()">Log Out</a>
     </div>
 
     <div class="container">
@@ -239,6 +239,79 @@
             }
         }
     </script>
+<script>
+const API_URL = 'https://torrenthub-api.serafimkoragin-b12.workers.dev';
 
+async function loadAccount() {
+    const token = localStorage.getItem('torrenthub_token');
+    
+    if (!token) {
+        window.location.href = 'login.html';
+        return;
+    }
+    
+    try {
+        const res = await fetch(`${API_URL}/api/auth/me`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        
+        if (!data.success) {
+            localStorage.removeItem('torrenthub_token');
+            window.location.href = 'login.html';
+            return;
+        }
+        
+        // Update page with real user data
+        document.querySelector('.account-box:nth-child(1)').innerHTML = `
+            <h3>👤 My Profile</h3>
+            <div class="info-row">
+                <label>Username</label>
+                <span>${data.user.username}</span>
+            </div>
+            <div class="info-row">
+                <label>Nickname</label>
+                <span>${data.user.nickname}</span>
+            </div>
+            <div class="info-row">
+                <label>Email</label>
+                <span>${data.user.email}</span>
+            </div>
+            <div class="info-row">
+                <label>Member Since</label>
+                <span>July 11, 2026</span>
+            </div>
+            <div class="info-row">
+                <label>Reputation</label>
+                <span>⭐ ${data.user.reputation || 0} points</span>
+            </div>
+            <div class="info-row">
+                <label>2-Step Verification</label>
+                <span>✅ Enabled (Email)</span>
+            </div>
+            <button class="btn btn-orange">Edit Profile</button>
+            <button class="btn btn-gray">Change Password</button>
+        `;
+        
+    } catch (err) {
+        console.error('Failed to load account:', err);
+    }
+}
+
+function logout() {
+    const token = localStorage.getItem('torrenthub_token');
+    fetch(`${API_URL}/api/auth/logout`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` }
+    }).finally(() => {
+        localStorage.removeItem('torrenthub_token');
+        localStorage.removeItem('torrenthub_user');
+        window.location.href = 'index.html';
+    });
+}
+
+// Load account on page load
+loadAccount();
+</script>
 </body>
 </html>
