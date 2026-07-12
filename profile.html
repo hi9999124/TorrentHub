@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>User Profile - TorrentHub</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #e8e4e0; color: #333; transition: all 0.3s ease; }
+        body.dark-mode { background: #1a1a2e; color: #e0e0e0; }
+        body.dark-mode .profile-card { background: #2a2a3e; color: #e0e0e0; }
+        body.dark-mode .nav { background: #16162a; }
+        body.dark-mode .nav a { color: #aaa; }
+        body.dark-mode .nav a:hover { color: #ff6b00; }
+        body.dark-mode .dropdown-content { background: #2a2a3e; color: #e0e0e0; }
+        body.dark-mode .dropdown-content a { color: #e0e0e0; }
+        body.dark-mode .dropdown-content a:hover { background: #3a3a5e; }
+        body.dark-mode .user-info { border-bottom-color: #444; color: #e0e0e0; }
+        body.dark-mode .post-item { background: #1a1a2e; }
+        body.dark-mode .torrent-item { background: #1a1a2e; }
+        body.dark-mode .reputation-item { background: #1a1a2e; }
+
+        .header { background: #ff6b00; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; transition: background 0.3s; }
+        .header h1 { color: #fff; font-size: 24px; }
+        .header h1 a { color: #fff; text-decoration: none; }
+        .nav { background: #2c2c2c; padding: 10px 20px; display: flex; gap: 20px; flex-wrap: wrap; }
+        .nav a { color: #ccc; text-decoration: none; font-size: 14px; font-weight: 500; }
+        .nav a:hover { color: #ff6b00; }
+        .container { max-width: 900px; margin: 30px auto; padding: 0 20px; }
+        .profile-card { background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 20px; transition: background 0.3s; }
+        .profile-header { display: flex; align-items: center; gap: 25px; flex-wrap: wrap; }
+        .profile-avatar { width: 100px; height: 100px; border-radius: 50%; background: #ff6b00; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 48px; font-weight: 700; flex-shrink: 0; }
+        .profile-info { flex: 1; }
+        .profile-info h2 { margin-bottom: 5px; }
+        .profile-info .username { color: #888; font-size: 14px; margin-bottom: 8px; }
+        .profile-info .meta { font-size: 14px; color: #888; display: flex; gap: 20px; flex-wrap: wrap; }
+        .profile-info .reputation { font-size: 28px; font-weight: 700; color: #ff6b00; margin-top: 10px; }
+        .profile-bio { margin-top: 15px; padding-top: 15px; border-top: 1px solid #eee; }
+        body.dark-mode .profile-bio { border-top-color: #444; }
+
+        .section { margin-top: 25px; }
+        .section h3 { border-bottom: 2px solid #ff6b00; padding-bottom: 10px; margin-bottom: 15px; }
+        .post-item, .torrent-item, .reputation-item { background: #f8f9fa; padding: 12px 15px; border-radius: 4px; margin-bottom: 8px; transition: background 0.3s; }
+        .post-item a { color: #ff6b00; text-decoration: none; }
+        .post-item a:hover { text-decoration: underline; }
+        .torrent-item a { color: #ff6b00; text-decoration: none; }
+        .torrent-item a:hover { text-decoration: underline; }
+        .post-item .meta, .torrent-item .meta { font-size: 12px; color: #888; margin-top: 4px; }
+        .reputation-item .change { font-weight: 700; }
+        .reputation-item .positive { color: #28a745; }
+        .reputation-item .negative { color: #dc3545; }
+        .reputation-item .reason { color: #555; margin-left: 10px; }
+        .empty { text-align: center; padding: 20px; color: #888; }
+
+        .user-panel { display: flex; gap: 10px; align-items: center; }
+        .user-panel a { background: #fff; color: #ff6b00; padding: 8px 16px; border-radius: 4px; text-decoration: none; font-weight: 600; }
+        .user-panel a:hover { background: #f0f0f0; }
+        .dropdown { position: relative; display: inline-block; }
+        .dropdown-btn { background: #fff; color: #ff6b00; padding: 8px 16px; border-radius: 4px; border: none; font-weight: 600; cursor: pointer; }
+        .dropdown-btn:hover { background: #f0f0f0; }
+        .dropdown-content { display: none; position: absolute; right: 0; background: #fff; min-width: 200px; box-shadow: 0 8px 16px rgba(0,0,0,0.2); border-radius: 8px; z-index: 100; padding: 10px 0; }
+        .dropdown-content a, .dropdown-content button { display: block; padding: 10px 20px; color: #333; text-decoration: none; background: none; border: none; width: 100%; text-align: left; cursor: pointer; font-size: 14px; }
+        .dropdown-content a:hover, .dropdown-content button:hover { background: #f5f5f5; }
+        .dropdown:hover .dropdown-content { display: block; }
+        .btn { display: inline-block; padding: 8px 16px; background: #ff6b00; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; text-decoration: none; }
+        .btn:hover { background: #e55f00; }
+        .btn-gray { background: #6c757d; }
+        .btn-gray:hover { background: #5a6268; }
+        .btn-sm { padding: 4px 12px; font-size: 12px; }
+
+        @media (max-width: 600px) {
+            .profile-header { flex-direction: column; text-align: center; }
+            .profile-avatar { width: 80px; height: 80px; font-size: 32px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header" id="mainHeader">
+        <h1><a href="index.html">🔥 TorrentHub</a></h1>
+        <div class="user-panel" id="userPanel">
+            <a href="login.html">Log In</a>
+            <a href="login.html">Register</a>
+        </div>
+    </div>
+
+    <div class="nav">
+        <a href="index.html">Home</a>
+        <a href="forum.html">Forum</a>
+        <a href="upload.html">📤 Upload</a>
+        <a href="top100.html">🏆 Top 100</a>
+        <a href="users.html">👥 Users</a>
+    </div>
+
+    <div class="container" id="mainContainer">
+        <div style="text-align:center;padding:40px;color:#888;">Loading profile...</div>
+    </div>
+
+    <script>
+        const API_URL = 'https://torrenthub-api.serafimkoragin-b12.workers.dev';
+        let currentUserId = null;
+
+        // ---------- SETTINGS ----------
+        function applySettings(settings) {
+            if (settings.theme_color) {
+                document.getElementById('mainHeader').style.background = settings.theme_color;
+            }
+            if (settings.bg_enabled && settings.bg_image) {
+                document.body.style.backgroundImage = `url(${settings.bg_image})`;
+                document.body.style.backgroundSize = 'cover';
+                document.body.style.backgroundAttachment = 'fixed';
+            } else {
+                document.body.style.backgroundImage = 'none';
+                document.body.style.background = '#e8e4e0';
+            }
+            document.body.style.transition = settings.animations ? 'all 0.3s ease' : 'none';
+            const darkMode = localStorage.getItem('torrenthub_darkmode') === 'true';
+            if (darkMode) {
+                document.body.classList.add('dark-mode');
+            } else {
+                document.body.classList.remove('dark-mode');
+            }
+        }
+
+        function applyLocalSettings() {
+            const themeColor = localStorage.getItem('torrenthub_theme') || '#ff6b00';
+            document.getElementById('mainHeader').style.background = themeColor;
+            const bg = localStorage.getItem('torrenthub_bg');
+            if (bg && bg !== 'none') {
+                document.body.style.backgroundImage = `url(${bg})`;
+                document.body.style.backgroundSize = 'cover';
+                document.body.style.backgroundAttachment = 'fixed';
+            } else {
+                document.body.style.backgroundImage = 'none';
+                document.body.style.background = '#e8e4e0';
+            }
+            const animations = localStorage.getItem('torrenthub_animations') !== 'false';
+            document.body.style.transition = animations ? 'all 0.3s ease' : 'none';
+            if (localStorage.getItem('torrenthub_darkmode') === 'true') {
+                document.body.classList.add('dark-mode');
+            } else {
+                document.body.classList.remove('dark-mode');
+            }
+        }
+
+        async function loadSettingsAndApply() {
+            const token = localStorage.getItem('torrenthub_token');
+            if (!token) return;
+            try {
+                const res = await fetch(`${API_URL}/api/auth/settings`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+                if (data.success) {
+                    applySettings(data.settings);
+                } else {
+                    applyLocalSettings();
+                }
+            } catch (e) {
+                applyLocalSettings();
+            }
+        }
+
+        // ---------- LOGIN CHECK ----------
+        async function checkLogin() {
+            const token = localStorage.getItem('torrenthub_token');
+            const panel = document.getElementById('userPanel');
+            if (!token) {
+                panel.innerHTML = `<a href="login.html">Log In</a><a href="login.html">Register</a>`;
+                return;
+            }
+            try {
+                const res = await fetch(`${API_URL}/api/auth/me`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+                if (!data.success) {
+                    localStorage.removeItem('torrenthub_token');
+                    panel.innerHTML = `<a href="login.html">Log In</a><a href="login.html">Register</a>`;
+                    return;
+                }
+                panel.innerHTML = `
+                    <div class="dropdown">
+                        <button class="dropdown-btn">👤 ${data.user.nickname}</button>
+                        <div class="dropdown-content">
+                            <div class="user-info">⭐ ${data.user.reputation || 0} pts</div>
+                            <a href="account.html">👤 My Account</a>
+                            <a href="forum.html">📚 Forum</a>
+                            <a href="upload.html">📤 Upload</a>
+                            <a href="settings.html">⚙️ Settings</a>
+                            <button onclick="logout()">🚪 Log Out</button>
+                        </div>
+                    </div>
+                `;
+            } catch (e) {
+                panel.innerHTML = `<a href="login.html">Log In</a><a href="login.html">Register</a>`;
+            }
+        }
+
+        function logout() {
+            const token = localStorage.getItem('torrenthub_token');
+            if (token) {
+                fetch(`${API_URL}/api/auth/logout`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                }).catch(() => {});
+            }
+            localStorage.removeItem('torrenthub_token');
+            localStorage.removeItem('torrenthub_user');
+            window.location.href = 'index.html';
+        }
+
+        // ---------- LOAD PROFILE ----------
+        async function loadProfile() {
+            const params = new URLSearchParams(window.location.search);
+            const userId = params.get('id');
+            const container = document.getElementById('mainContainer');
+
+            if (!userId || !/^\d+$/.test(userId)) {
+                container.innerHTML = `<div style="color:red;padding:20px;">Invalid user ID.</div>`;
+                return;
+            }
+
+            currentUserId = userId;
+            container.innerHTML = '<div style="text-align:center;padding:40px;color:#888;">Loading...</div>';
+
+            try {
+                const res = await fetch(`${API_URL}/api/users/${userId}`);
+                const data = await res.json();
+
+                if (!data.success) throw new Error(data.error);
+
+                renderProfile(data.user, data.torrents, data.posts);
+                loadReputationHistory(userId);
+            } catch (err) {
+                container.innerHTML = `<div style="color:red;padding:20px;">Error: ${err.message}</div>`;
+            }
+        }
+
+        function renderProfile(user, torrents, posts) {
+            const container = document.getElementById('mainContainer');
+            const avatarChar = user.nickname ? user.nickname.charAt(0).toUpperCase() : user.username.charAt(0).toUpperCase();
+            const memberDate = new Date(user.created_at).toLocaleDateString();
+
+            let torrentsHtml = '';
+            if (torrents && torrents.length > 0) {
+                torrents.forEach(t => {
+                    const size = formatFileSize(t.file_size);
+                    torrentsHtml += `
+                        <div class="torrent-item">
+                            <a href="torrent.html?id=${t.id}">${t.title}</a>
+                            <div class="meta">📂 ${t.category || 'General'} · 📦 ${size} · ⬇️ ${t.download_count || 0} downloads · 👍 ${t.vote_score || 0}</div>
+                        </div>
+                    `;
+                });
+            } else {
+                torrentsHtml = '<div class="empty">No torrents uploaded.</div>';
+            }
+
+            let postsHtml = '';
+            if (posts && posts.length > 0) {
+                posts.forEach(p => {
+                    postsHtml += `
+                        <div class="post-item">
+                            <a href="post.html?id=${p.id}">${p.title}</a>
+                            <div class="meta">📌 ${p.topic_name || 'General'} · 💬 ${p.comment_count || 0} comments · 👍 ${p.vote_score || 0}</div>
+                        </div>
+                    `;
+                });
+            } else {
+                postsHtml = '<div class="empty">No forum posts.</div>';
+            }
+
+            const isOwnProfile = currentUserId && localStorage.getItem('torrenthub_user') ? 
+                JSON.parse(localStorage.getItem('torrenthub_user')).id == currentUserId : false;
+
+            container.innerHTML = `
+                <div class="profile-card">
+                    <div class="profile-header">
+                        <div class="profile-avatar">${avatarChar}</div>
+                        <div class="profile-info">
+                            <h2>${user.nickname || user.username}</h2>
+                            <div class="username">@${user.username}</div>
+                            <div class="meta">
+                                <span>📅 Joined ${memberDate}</span>
+                                ${user.location ? `<span>📍 ${user.location}</span>` : ''}
+                                ${user.website ? `<span>🔗 <a href="${user.website}" target="_blank" style="color:#ff6b00;">Website</a></span>` : ''}
+                            </div>
+                            <div class="reputation">⭐ ${user.reputation || 0} reputation</div>
+                            ${isOwnProfile ? `<a href="account.html" class="btn btn-sm" style="margin-top:10px;">✏️ Edit Profile</a>` : ''}
+                        </div>
+                    </div>
+                    ${user.bio ? `<div class="profile-bio">${user.bio}</div>` : ''}
+                </div>
+
+                <div class="section">
+                    <h3>📄 Recent Torrents</h3>
+                    <div id="torrentsList">${torrentsHtml}</div>
+                </div>
+
+                <div class="section">
+                    <h3>💬 Recent Forum Posts</h3>
+                    <div id="postsList">${postsHtml}</div>
+                </div>
+
+                <div class="section">
+                    <h3>📊 Reputation History</h3>
+                    <div id="reputationList"><div class="empty">Loading...</div></div>
+                </div>
+            `;
+        }
+
+        async function loadReputationHistory(userId) {
+            try {
+                const res = await fetch(`${API_URL}/api/users/${userId}/reputation`);
+                const data = await res.json();
+
+                const container = document.getElementById('reputationList');
+                if (!container) return;
+
+                if (!data.success || !data.history || data.history.length === 0) {
+                    container.innerHTML = '<div class="empty">No reputation changes yet.</div>';
+                    return;
+                }
+
+                let html = '';
+                data.history.forEach(h => {
+                    const change = h.change_amount;
+                    const sign = change > 0 ? '+' : '';
+                    const cls = change > 0 ? 'positive' : (change < 0 ? 'negative' : '');
+                    const date = new Date(h.created_at).toLocaleString();
+
+                    html += `
+                        <div class="reputation-item">
+                            <span class="change ${cls}">${sign}${change}</span>
+                            <span class="reason">${h.reason || 'Unknown'}</span>
+                            <span style="color:#888;font-size:12px;float:right;">${date}</span>
+                        </div>
+                    `;
+                });
+
+                container.innerHTML = html;
+            } catch (err) {
+                const container = document.getElementById('reputationList');
+                if (container) {
+                    container.innerHTML = `<div style="color:#888;">Failed to load reputation history.</div>`;
+                }
+            }
+        }
+
+        function formatFileSize(bytes) {
+            if (!bytes || bytes === 0) return 'Unknown';
+            const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(1024));
+            return (bytes / Math.pow(1024, i)).toFixed(1) + ' ' + sizes[i];
+        }
+
+        // ---------- INIT ----------
+        loadSettingsAndApply();
+        checkLogin();
+        loadProfile();
+    </script>
+</body>
+</html>
