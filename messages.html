@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Messages - TorrentHub</title>
     <style>
-        /* === Styles (your existing ones, plus new compose area) === */
+        /* === Full styles (your existing, plus new compose area) === */
         * { margin:0; padding:0; box-sizing:border-box; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #e8e4e0; color: #333; transition: all 0.3s ease; }
         body.dark-mode { background: #0a0a0f !important; color: #f0f0f0 !important; }
@@ -181,8 +181,8 @@
     let isSending = false;
     let lastMessageTime = 0;
 
-    // ===== Helper: compress image =====
-    function compressImage(file, maxWidth = 1200, quality = 0.8) {
+    // ===== AGGRESSIVE COMPRESSION: max width 800px, quality 0.6 =====
+    function compressImage(file) {
         return new Promise((resolve) => {
             const reader = new FileReader();
             reader.onload = (e) => {
@@ -190,11 +190,14 @@
                 img.onload = () => {
                     const canvas = document.createElement('canvas');
                     let w = img.width, h = img.height;
-                    if (w > maxWidth) { h = (maxWidth / w) * h; w = maxWidth; }
-                    canvas.width = w; canvas.height = h;
+                    const max = 800;
+                    if (w > max) { h = (max / w) * h; w = max; }
+                    if (h > max) { w = (max / h) * w; h = max; }
+                    canvas.width = w;
+                    canvas.height = h;
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0, w, h);
-                    resolve(canvas.toDataURL('image/jpeg', quality));
+                    resolve(canvas.toDataURL('image/jpeg', 0.6));
                 };
                 img.src = e.target.result;
             };
@@ -329,7 +332,7 @@
 
         if (pendingFile) {
             try {
-                imageData = await compressImage(pendingFile, 1200, 0.8);
+                imageData = await compressImage(pendingFile);
             } catch (err) {
                 alert('Image compression failed: ' + err.message);
                 return;
@@ -493,7 +496,7 @@
                 const senderName = isSent ? 'You' : (m.sender_nickname || m.sender_username || 'Unknown');
                 const time = new Date(m.created_at).toLocaleString();
                 let contentHtml = m.message;
-                // Check if it's an image attachment
+                // Display image if attachment_url exists and is a data URL
                 if (m.attachment_url && m.attachment_url.startsWith('data:image')) {
                     contentHtml = `<div class="file-attachment"><img src="${m.attachment_url}" alt="Image" /></div>`;
                 } else if (m.attachment_url && m.attachment_url.startsWith('https://')) {
@@ -543,7 +546,6 @@
             }
         });
 
-        // Store reply file state
         window.replyFile = null;
     }
 
@@ -580,7 +582,7 @@
         let imageData = null;
         if (file) {
             try {
-                imageData = await compressImage(file, 1200, 0.8);
+                imageData = await compressImage(file);
                 removeReplyFile();
             } catch (err) {
                 alert('Image compression failed: ' + err.message);
@@ -639,7 +641,6 @@
     loadConversations();
     setInterval(checkNewMessages, 10000);
 
-    // If ?to= param is present, open that conversation
     const params = new URLSearchParams(window.location.search);
     if (params.get('to')) {
         setTimeout(() => {
