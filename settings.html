@@ -34,21 +34,6 @@
         body.dark-mode .setting-row label {
             color: #ccc;
         }
-        body.dark-mode .input-group input,
-        body.dark-mode .input-group select,
-        body.dark-mode .input-group textarea {
-            background: #1a1a2e;
-            color: #e0e0e0;
-            border-color: #444;
-        }
-        body.dark-mode .drop-zone {
-            background: #1a1a2e;
-            border-color: #444;
-        }
-        body.dark-mode .drop-zone:hover {
-            background: #2a2a4e;
-            border-color: #ff6b00;
-        }
         body.dark-mode .nav {
             background: #16162a;
         }
@@ -58,9 +43,6 @@
         body.dark-mode .nav a:hover {
             color: #ff6b00;
         }
-        body.dark-mode .file-preview {
-            background: #1a1a3e;
-        }
         body.dark-mode .bg-preview {
             background: #1a1a2e;
             border-color: #444;
@@ -69,6 +51,10 @@
             background: #2a1a1a;
             border-color: #dc3545;
             color: #ff6b6b;
+        }
+        body.dark-mode .file-info {
+            background: #1a1a2e;
+            color: #aaa;
         }
 
         .header {
@@ -123,6 +109,9 @@
             justify-content: space-between;
             padding: 12px 0;
             border-bottom: 1px solid #eee;
+        }
+        .setting-row:last-child {
+            border-bottom: none;
         }
         .setting-row label {
             font-weight: 600;
@@ -267,17 +256,6 @@
             gap: 15px;
             flex-wrap: wrap;
         }
-        .dark-mode-toggle {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-        .dark-mode-toggle label {
-            font-weight: 600;
-            color: #555;
-        }
-
-        /* ⚠️ RED WARNING BOX */
         .warning-box {
             background: #fff3cd;
             border: 2px solid #dc3545;
@@ -300,12 +278,14 @@
         .warning-box .text {
             flex: 1;
         }
-        body.dark-mode .warning-box {
-            background: #2a1a1a;
-            border-color: #dc3545;
-            color: #ff6b6b;
+        .file-info {
+            background: #f8f9fa;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
         }
-
         @media (max-width: 600px) {
             .setting-row {
                 flex-wrap: wrap;
@@ -322,7 +302,7 @@
     </style>
 </head>
 <body>
-    <div class="header">
+    <div class="header" id="mainHeader">
         <h1><a href="index.html">🔥 TorrentHub</a></h1>
     </div>
     <div class="nav">
@@ -336,10 +316,21 @@
 
     <script>
         const API_URL = 'https://torrenthub-api.serafimkoragin-b12.workers.dev';
-        let currentSettings = {};
         let token = null;
+        let currentSettings = {
+            theme_color: '#ff6b00',
+            bg_image: '',
+            bg_enabled: false,
+            animations: true
+        };
         let isDarkMode = false;
 
+        // ---------- DOM References ----------
+        let themeColorInput, bgImageInput, bgFileInput, bgPreview;
+        let darkModeToggle, bgToggle, animationsToggle;
+        let successMsg, warningBox;
+
+        // ---------- Load Settings ----------
         async function loadSettings() {
             const container = document.getElementById('mainContainer');
             token = localStorage.getItem('torrenthub_token');
@@ -350,11 +341,9 @@
                 return;
             }
 
-            // Check for dark mode preference
+            // Load dark mode from localStorage
             isDarkMode = localStorage.getItem('torrenthub_darkmode') === 'true';
-            if (isDarkMode) {
-                document.body.classList.add('dark-mode');
-            }
+            if (isDarkMode) document.body.classList.add('dark-mode');
 
             try {
                 const res = await fetch(`${API_URL}/api/auth/settings`, {
@@ -370,28 +359,31 @@
                     bg_enabled: false,
                     animations: true
                 };
+
                 renderSettings();
+
             } catch (err) {
                 container.innerHTML = `<div class="error-box">❌ ${err.message}</div>`;
             }
         }
 
+        // ---------- Render Settings ----------
         function renderSettings() {
-            const s = currentSettings;
             const container = document.getElementById('mainContainer');
+            const s = currentSettings;
 
             const bgPreviewContent = s.bg_image ?
                 `<img src="${s.bg_image}" alt="Background preview" />` :
-                'No image uploaded. Use URL or upload a file.';
+                'No image. Use URL or upload a file.';
 
             container.innerHTML = `
                 <div id="successMsg" class="success-msg">✅ Settings saved!</div>
 
                 <div class="settings-box">
                     <h3>🌓 Dark Mode</h3>
-                    <div class="setting-row" style="border-bottom:none;">
+                    <div class="setting-row">
                         <label>Enable Dark Mode</label>
-                        <div class="toggle-switch ${isDarkMode ? 'active' : ''}" onclick="toggleDarkMode()">
+                        <div class="toggle-switch ${isDarkMode ? 'active' : ''}" id="darkModeToggle">
                             <div class="slider"></div>
                         </div>
                     </div>
@@ -401,9 +393,9 @@
                     <h3>🎨 Theme & Colors</h3>
                     <div class="setting-row">
                         <label>Primary Color</label>
-                        <input type="color" id="themeColor" value="${s.theme_color}" oninput="previewColor(this.value)" />
+                        <input type="color" id="themeColor" value="${s.theme_color}" />
                     </div>
-                    <div class="setting-row">
+                    <div class="setting-row" style="border-bottom:none;">
                         <label>Preset Themes</label>
                         <div class="preset-themes">
                             <button onclick="applyPreset('#ff6b00')" style="background:#ff6b00;color:#fff;">Orange</button>
@@ -420,7 +412,6 @@
                 <div class="settings-box">
                     <h3>🖼️ Background Image</h3>
 
-                    <!-- ⚠️ RED WARNING BOX -->
                     <div class="warning-box" id="imageWarning">
                         <span class="icon">⚠️</span>
                         <span class="text"><strong>URL images are more reliable.</strong> Uploaded images are compressed and may lose quality. For best results, use an image URL.</span>
@@ -428,20 +419,20 @@
 
                     <div class="setting-row">
                         <label>Enable Background</label>
-                        <div class="toggle-switch ${s.bg_enabled ? 'active' : ''}" onclick="toggleBg()">
+                        <div class="toggle-switch ${s.bg_enabled ? 'active' : ''}" id="bgToggle">
                             <div class="slider"></div>
                         </div>
                     </div>
                     <div class="setting-row">
                         <label>Upload Image</label>
-                        <input type="file" id="bgFileInput" accept="image/*" onchange="handleFileUpload(event)" />
-                        <p style="font-size:11px;color:#888;margin-top:5px;">Images are automatically compressed to ~800px width</p>
-                    </div>
-                    <div class="setting-row">
-                        <label>Or Enter URL</label>
-                        <input type="url" id="bgImage" value="${s.bg_image || ''}" placeholder="https://example.com/image.jpg" oninput="handleUrlInput()" />
+                        <input type="file" id="bgFileInput" accept="image/*" />
+                        <div class="file-info">Images are automatically compressed to ~800px width</div>
                     </div>
                     <div class="setting-row" style="border-bottom:none;">
+                        <label>Or Enter URL</label>
+                        <input type="url" id="bgImage" value="${s.bg_image || ''}" placeholder="https://example.com/image.jpg" />
+                    </div>
+                    <div class="setting-row" style="border-bottom:none; padding-top:15px;">
                         <label>Preview</label>
                         <div class="bg-preview" id="bgPreview">
                             ${bgPreviewContent}
@@ -453,85 +444,141 @@
                     <h3>✨ Animations</h3>
                     <div class="setting-row" style="border-bottom:none;">
                         <label>Enable Animations</label>
-                        <div class="toggle-switch ${s.animations ? 'active' : ''}" onclick="toggleAnimationsUI()">
+                        <div class="toggle-switch ${s.animations ? 'active' : ''}" id="animationsToggle">
                             <div class="slider"></div>
                         </div>
                     </div>
                 </div>
 
                 <div class="btn-group">
-                    <button class="btn btn-orange" onclick="saveSettings()">💾 Save All Settings</button>
-                    <button class="btn btn-gray" onclick="resetDefaults()">↺ Reset Defaults</button>
+                    <button class="btn btn-orange" id="saveBtn">💾 Save All Settings</button>
+                    <button class="btn btn-gray" id="resetBtn">↺ Reset Defaults</button>
                 </div>
             `;
 
+            // ---------- Get DOM references ----------
+            themeColorInput = document.getElementById('themeColor');
+            bgImageInput = document.getElementById('bgImage');
+            bgFileInput = document.getElementById('bgFileInput');
+            bgPreview = document.getElementById('bgPreview');
+            darkModeToggle = document.getElementById('darkModeToggle');
+            bgToggle = document.getElementById('bgToggle');
+            animationsToggle = document.getElementById('animationsToggle');
+            successMsg = document.getElementById('successMsg');
+            warningBox = document.getElementById('imageWarning');
+
+            // ---------- Attach events ----------
+            themeColorInput.addEventListener('input', function() {
+                document.getElementById('mainHeader').style.background = this.value;
+            });
+
+            bgImageInput.addEventListener('input', function() {
+                const val = this.value;
+                if (val && val.startsWith('http')) {
+                    warningBox.classList.remove('show');
+                }
+                updatePreview();
+            });
+
+            bgFileInput.addEventListener('change', handleFileUpload);
+
+            darkModeToggle.addEventListener('click', function(e) {
+                e.stopPropagation();
+                isDarkMode = !isDarkMode;
+                this.classList.toggle('active');
+                document.body.classList.toggle('dark-mode');
+                localStorage.setItem('torrenthub_darkmode', isDarkMode);
+                showMessage(isDarkMode ? '🌙 Dark mode enabled!' : '☀️ Light mode enabled!');
+            });
+
+            bgToggle.addEventListener('click', function(e) {
+                e.stopPropagation();
+                this.classList.toggle('active');
+                currentSettings.bg_enabled = this.classList.contains('active');
+                updatePreview();
+            });
+
+            animationsToggle.addEventListener('click', function(e) {
+                e.stopPropagation();
+                this.classList.toggle('active');
+                currentSettings.animations = this.classList.contains('active');
+                document.body.style.transition = currentSettings.animations ? 'all 0.3s ease' : 'none';
+            });
+
+            document.getElementById('saveBtn').addEventListener('click', saveSettings);
+            document.getElementById('resetBtn').addEventListener('click', resetDefaults);
+
+            // Apply theme color to header
+            document.getElementById('mainHeader').style.background = currentSettings.theme_color;
+
+            // Update preview
             updatePreview();
-        }
 
-        // ---------- Dark Mode ----------
-        function toggleDarkMode() {
-            const toggle = document.querySelector('#mainContainer .toggle-switch');
-            isDarkMode = !isDarkMode;
-            toggle.classList.toggle('active');
-            document.body.classList.toggle('dark-mode');
-            localStorage.setItem('torrenthub_darkmode', isDarkMode);
-            showTemporaryMessage(isDarkMode ? '🌙 Dark mode enabled!' : '☀️ Light mode enabled!');
-        }
-
-        // ---------- Theme ----------
-        function previewColor(color) {
-            document.querySelector('.header').style.background = color;
-            document.getElementById('themeColor').value = color;
-        }
-
-        function applyPreset(color) {
-            document.getElementById('themeColor').value = color;
-            previewColor(color);
-        }
-
-        function toggleBg() {
-            const toggle = document.querySelector('#mainContainer .toggle-switch');
-            const isActive = toggle.classList.toggle('active');
-            currentSettings.bg_enabled = isActive;
-            updatePreview();
-        }
-
-        function toggleAnimationsUI() {
-            const toggles = document.querySelectorAll('#mainContainer .toggle-switch');
-            const toggle = toggles[1];
-            const isActive = toggle.classList.toggle('active');
-            currentSettings.animations = isActive;
-            if (isActive) {
-                document.body.style.transition = 'all 0.3s ease';
-            } else {
-                document.body.style.transition = 'none';
+            // Show warning if bg_image is a data URL (uploaded)
+            if (currentSettings.bg_image && currentSettings.bg_image.startsWith('data:')) {
+                warningBox.classList.add('show');
             }
         }
 
-        // ---------- Show/Hide Warning ----------
-        function showWarning(show) {
-            const warning = document.getElementById('imageWarning');
-            if (warning) {
-                if (show) {
-                    warning.classList.add('show');
-                } else {
-                    warning.classList.remove('show');
+        // ---------- Apply Preset ----------
+        function applyPreset(color) {
+            if (themeColorInput) {
+                themeColorInput.value = color;
+                document.getElementById('mainHeader').style.background = color;
+            }
+        }
+
+        // ---------- Update Preview ----------
+        function updatePreview() {
+            if (!bgPreview || !bgImageInput) return;
+            const bgImage = bgImageInput.value || '';
+
+            if (bgImage && currentSettings.bg_enabled) {
+                bgPreview.innerHTML = `<img src="${bgImage}" alt="Background preview" />`;
+                document.body.style.backgroundImage = `url(${bgImage})`;
+                document.body.style.backgroundSize = 'cover';
+                document.body.style.backgroundAttachment = 'fixed';
+            } else {
+                bgPreview.innerHTML = 'No image. Use URL or upload a file.';
+                if (!isDarkMode) {
+                    document.body.style.backgroundImage = 'none';
+                    document.body.style.background = '#e8e4e0';
                 }
             }
         }
 
-        // ---------- Handle URL Input ----------
-        function handleUrlInput() {
-            // Hide warning when user types a URL
-            const url = document.getElementById('bgImage').value;
-            if (url && url.startsWith('http')) {
-                showWarning(false);
+        // ---------- Handle File Upload ----------
+        async function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            // Show warning
+            if (warningBox) warningBox.classList.add('show');
+
+            try {
+                showMessage('⏳ Compressing image...');
+
+                const compressedDataUrl = await compressImage(file, 800, 0.75);
+
+                if (bgImageInput) {
+                    bgImageInput.value = compressedDataUrl;
+                    currentSettings.bg_image = compressedDataUrl;
+                }
+
+                if (bgToggle && !bgToggle.classList.contains('active')) {
+                    bgToggle.classList.add('active');
+                    currentSettings.bg_enabled = true;
+                }
+
+                updatePreview();
+                showMessage('✅ Image compressed and ready! Click Save to apply.');
+            } catch (err) {
+                showMessage('❌ Failed to compress image: ' + err.message);
             }
-            updatePreview();
         }
 
-        // ---------- Image Compression ----------
-        function compressImage(file, maxWidth = 800, quality = 0.8) {
+        // ---------- Compress Image ----------
+        function compressImage(file, maxWidth = 800, quality = 0.75) {
             return new Promise((resolve) => {
                 const reader = new FileReader();
                 reader.onload = function(e) {
@@ -551,8 +598,7 @@
                         const ctx = canvas.getContext('2d');
                         ctx.drawImage(img, 0, 0, width, height);
 
-                        const dataUrl = canvas.toDataURL('image/jpeg', quality);
-                        resolve(dataUrl);
+                        resolve(canvas.toDataURL('image/jpeg', quality));
                     };
                     img.src = e.target.result;
                 };
@@ -560,74 +606,21 @@
             });
         }
 
-        // ---------- Handle File Upload (with compression) ----------
-        async function handleFileUpload(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            // ⚠️ SHOW RED WARNING when user uploads a file
-            showWarning(true);
-
-            try {
-                showTemporaryMessage('⏳ Compressing image...');
-
-                const compressedDataUrl = await compressImage(file, 800, 0.75);
-
-                document.getElementById('bgImage').value = compressedDataUrl;
-                currentSettings.bg_image = compressedDataUrl;
-                currentSettings.bg_enabled = true;
-
-                const toggle = document.querySelector('#mainContainer .toggle-switch');
-                if (!toggle.classList.contains('active')) {
-                    toggle.classList.add('active');
-                }
-
-                updatePreview();
-                showTemporaryMessage('✅ Image compressed and ready! Click Save to apply.');
-            } catch (err) {
-                showTemporaryMessage('❌ Failed to compress image: ' + err.message);
-            }
-        }
-
-        // ---------- Update Preview ----------
-        function updatePreview() {
-            const bgImage = document.getElementById('bgImage')?.value || '';
-            const preview = document.getElementById('bgPreview');
-
-            if (preview) {
-                if (bgImage && currentSettings.bg_enabled) {
-                    preview.innerHTML = `<img src="${bgImage}" alt="Background preview" />`;
-                    document.body.style.backgroundImage = `url(${bgImage})`;
-                    document.body.style.backgroundSize = 'cover';
-                    document.body.style.backgroundAttachment = 'fixed';
-                } else {
-                    preview.innerHTML = 'No image. Use URL or upload a file.';
-                    if (!isDarkMode) {
-                        document.body.style.backgroundImage = 'none';
-                        document.body.style.background = '#e8e4e0';
-                    }
-                }
-            }
-        }
-
-        // ---------- Show Temporary Message ----------
-        function showTemporaryMessage(msg) {
-            const msgEl = document.getElementById('successMsg');
-            msgEl.textContent = msg;
-            msgEl.classList.add('show');
-            setTimeout(() => msgEl.classList.remove('show'), 4000);
-        }
-
         // ---------- Save Settings ----------
         async function saveSettings() {
-            const themeColor = document.getElementById('themeColor').value;
-            const bgImage = document.getElementById('bgImage').value;
-            const bgEnabled = currentSettings.bg_enabled;
-            const animations = currentSettings.animations;
+            if (!token) {
+                showMessage('❌ Not logged in.');
+                return;
+            }
 
-            // Check if image is too large (over 1MB in base64)
+            const themeColor = themeColorInput ? themeColorInput.value : '#ff6b00';
+            const bgImage = bgImageInput ? bgImageInput.value : '';
+            const bgEnabled = bgToggle ? bgToggle.classList.contains('active') : false;
+            const animations = animationsToggle ? animationsToggle.classList.contains('active') : true;
+
+            // Check image size
             if (bgImage && bgImage.length > 1000000) {
-                showTemporaryMessage('⚠️ Image too large! Please upload a smaller image or use a URL.');
+                showMessage('⚠️ Image too large! Please upload a smaller image or use a URL.');
                 return;
             }
 
@@ -651,42 +644,63 @@
                 const data = await res.json();
 
                 if (data.success) {
-                    showTemporaryMessage('✅ Settings saved successfully!');
-                    document.querySelector('.header').style.background = themeColor;
+                    showMessage('✅ Settings saved successfully!');
+                    document.getElementById('mainHeader').style.background = themeColor;
                     localStorage.setItem('torrenthub_theme', themeColor);
                     localStorage.setItem('torrenthub_animations', animations);
                     localStorage.setItem('torrenthub_bg', bgEnabled && bgImage ? bgImage : 'none');
-                    // Hide warning after save
-                    showWarning(false);
+
+                    // Hide warning if URL was used
+                    if (bgImage && bgImage.startsWith('http')) {
+                        if (warningBox) warningBox.classList.remove('show');
+                    }
                 } else {
-                    showTemporaryMessage('❌ Failed to save: ' + (data.error || 'Unknown error'));
+                    showMessage('❌ Failed to save: ' + (data.error || 'Unknown error'));
                 }
             } catch (err) {
-                showTemporaryMessage('❌ Network error: ' + err.message);
+                showMessage('❌ Network error: ' + err.message);
             }
         }
 
         // ---------- Reset Defaults ----------
         function resetDefaults() {
             if (!confirm('Reset all settings to default?')) return;
-            document.getElementById('themeColor').value = '#ff6b00';
-            document.getElementById('bgImage').value = '';
-            document.getElementById('bgFileInput').value = '';
+
+            if (themeColorInput) themeColorInput.value = '#ff6b00';
+            if (bgImageInput) bgImageInput.value = '';
+            if (bgFileInput) bgFileInput.value = '';
+
+            if (darkModeToggle) darkModeToggle.classList.remove('active');
+            if (bgToggle) bgToggle.classList.remove('active');
+            if (animationsToggle) animationsToggle.classList.add('active');
+
+            isDarkMode = false;
+            document.body.classList.remove('dark-mode');
+            localStorage.setItem('torrenthub_darkmode', 'false');
+
             currentSettings.bg_enabled = false;
             currentSettings.animations = true;
             currentSettings.bg_image = '';
 
-            const toggles = document.querySelectorAll('#mainContainer .toggle-switch');
-            toggles[0].classList.remove('active');
-            toggles[1].classList.add('active');
-
             document.body.style.transition = 'all 0.3s ease';
             document.body.style.backgroundImage = 'none';
             document.body.style.background = '#e8e4e0';
-            document.querySelector('.header').style.background = '#ff6b00';
-            showWarning(false);
+            document.getElementById('mainHeader').style.background = '#ff6b00';
+
+            if (warningBox) warningBox.classList.remove('show');
             updatePreview();
-            saveSettings();
+            showMessage('✅ Reset to defaults! Click Save to confirm.');
+        }
+
+        // ---------- Show Message ----------
+        function showMessage(msg) {
+            if (!successMsg) return;
+            successMsg.textContent = msg;
+            successMsg.classList.add('show');
+            clearTimeout(successMsg._timeout);
+            successMsg._timeout = setTimeout(() => {
+                successMsg.classList.remove('show');
+            }, 4000);
         }
 
         // ---------- Logout ----------
@@ -703,17 +717,7 @@
             window.location.href = 'index.html';
         }
 
-        // ---------- Listen for input changes ----------
-        document.addEventListener('input', function(e) {
-            if (e.target && e.target.id === 'bgImage') {
-                const url = e.target.value;
-                if (url && url.startsWith('http')) {
-                    showWarning(false);
-                }
-                updatePreview();
-            }
-        });
-
+        // ---------- Load ----------
         loadSettings();
     </script>
 </body>
