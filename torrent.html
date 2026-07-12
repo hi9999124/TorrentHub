@@ -117,6 +117,7 @@
     </div>
 
     <script>
+        // ✅ FIXED: Use the Cloudflare Worker URL, not GitHub Pages
         const API_URL = 'https://torrenthub-api.serafimkoragin-b12.workers.dev';
         let currentUser = null;
         let torrentId = null;
@@ -209,18 +210,18 @@
 
             const isLoggedIn = !!localStorage.getItem('torrenthub_token');
 
-            // Download buttons
+            // Download buttons - ✅ FIXED: use full API URL
             let downloadButtons = '';
             if (t.file_data && t.file_data.length > 0) {
                 downloadButtons += `
-                    <a href="/api/torrents/${t.id}/file" class="file-download-btn" target="_blank">
+                    <a href="${API_URL}/api/torrents/${t.id}/file" class="file-download-btn" target="_blank">
                         📁 Download File (${fileSize})
                     </a>
                 `;
             }
             if (t.magnet_link || t.info_hash) {
                 downloadButtons += `
-                    <a href="/api/torrents/${t.id}/download" class="download-btn" target="_blank">
+                    <a href="${API_URL}/api/torrents/${t.id}/download" class="download-btn" target="_blank">
                         ⬇️ DOWNLOAD WITH MAGNET
                         <span class="sub">🔒 Only from this button — no ads, no trackers</span>
                     </a>
@@ -324,7 +325,7 @@
                 });
                 const data = await res.json();
                 if (data.success) {
-                    loadTorrent(); // Reload to show updated votes
+                    loadTorrent();
                 } else {
                     alert('Vote failed: ' + data.error);
                 }
@@ -351,7 +352,7 @@
                 });
                 const data = await res.json();
                 if (data.success) {
-                    loadTorrent(); // Reload to show updated votes
+                    loadTorrent();
                 } else {
                     alert('Vote failed: ' + data.error);
                 }
