@@ -210,7 +210,7 @@
 
             const isLoggedIn = !!localStorage.getItem('torrenthub_token');
 
-            // Download buttons - ✅ FIXED: use full API URL
+            // ✅ FIXED: Download buttons use FULL API_URL
             let downloadButtons = '';
             if (t.file_data && t.file_data.length > 0) {
                 downloadButtons += `
