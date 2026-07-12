@@ -83,6 +83,7 @@
             margin-right: 10px;
             margin-top: 15px;
             transition: background 0.2s;
+            display: inline-block;
         }
         .btn-orange {
             background: #ff6b00;
@@ -395,7 +396,7 @@
 
                 <div class="account-box">
                     <h3>⚠️ Danger Zone</h3>
-                    <button class="btn btn-red" onclick="deleteAccount()">Delete My Account</button>
+                    <button class="btn btn-red" onclick="toggleDeleteWarning()">Delete My Account</button>
                     <div class="warning-box" id="deleteWarning">
                         <h4>🚨 Are you absolutely sure?</h4>
                         <p>This will permanently delete:</p>
@@ -409,7 +410,7 @@
                         <p style="margin-top:10px;">Type <code>DELETE</code> to confirm:</p>
                         <input type="text" id="deleteConfirm" placeholder="Type DELETE here" style="width:100%; padding:10px; margin:10px 0; border:1px solid #dc3545; border-radius:4px;">
                         <button class="btn btn-red" onclick="confirmDelete()">I understand, delete everything</button>
-                        <button class="btn btn-gray" onclick="hideDeleteWarning()">Cancel</button>
+                        <button class="btn btn-gray" onclick="toggleDeleteWarning()">Cancel</button>
                     </div>
                 </div>
             `;
@@ -617,12 +618,8 @@
         }
 
         // ---------- Delete Account ----------
-        function deleteAccount() {
+        function toggleDeleteWarning() {
             document.getElementById('deleteWarning').classList.toggle('active');
-        }
-
-        function hideDeleteWarning() {
-            document.getElementById('deleteWarning').classList.remove('active');
         }
 
         function confirmDelete() {
