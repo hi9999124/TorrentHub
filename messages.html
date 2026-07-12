@@ -1,383 +1,110 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TorrentHub - RuTracker Style Forum & Torrent Index</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Messages - TorrentHub</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            background: #e8e4e0; 
-            color: #333; 
-            line-height: 1.6;
-            transition: all 0.3s ease;
-        }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #e8e4e0; color: #333; transition: all 0.3s ease; }
+        body.dark-mode { background: #0a0a0f !important; color: #f0f0f0 !important; }
+        body.dark-mode .header { background: #1a1a2e; }
+        body.dark-mode .nav { background: #11111f; }
+        body.dark-mode .nav a { color: #aaa; }
+        body.dark-mode .nav a:hover { color: #ff6b00; }
+        body.dark-mode .message-item { background: #1a1a2e; color: #f0f0f0; }
+        body.dark-mode .message-item:hover { background: #2a2a4e; }
+        body.dark-mode .conversation-item { background: #1a1a2e; color: #f0f0f0; }
+        body.dark-mode .conversation-item:hover { background: #2a2a4e; }
+        body.dark-mode .conversation-item.active { border-left-color: #ff6b00; }
+        body.dark-mode .dropdown-content { background: #1a1a2e; color: #f0f0f0; }
+        body.dark-mode .dropdown-content a { color: #f0f0f0; }
+        body.dark-mode .dropdown-content a:hover { background: #2a2a4e; }
+        body.dark-mode .user-info { border-bottom-color: #333; color: #f0f0f0; }
+        body.dark-mode .user-dropdown-btn { background: #1a1a2e; color: #ff6b00; }
+        body.dark-mode .user-dropdown-btn:hover { background: #2a2a4e; }
+        body.dark-mode .message-input input, body.dark-mode .message-input textarea { background: #0a0a0f; color: #f0f0f0; border-color: #444; }
+        body.dark-mode .file-preview { background: #0a0a0f; border-color: #444; }
+        body.dark-mode .tab-bar button { background: #1a1a2e; color: #f0f0f0; border-color: #444; }
+        body.dark-mode .tab-bar button.active { background: #ff6b00; color: #fff; }
+        body.dark-mode .message-item.sent { background: #1a1a3e; border-left-color: #ff6b00; }
+        body.dark-mode .message-item .file-attachment { background: #0a0a0f; }
 
-        /* ===== DARK MODE — DEEP BLACK ===== */
-        body.dark-mode {
-            background: #0a0a0f;
-            color: #f0f0f0;
-        }
-        body.dark-mode .header {
-            background: #1a1a2e;
-        }
-        body.dark-mode .nav {
-            background: #11111f;
-        }
-        body.dark-mode .nav a {
-            color: #aaa;
-        }
-        body.dark-mode .nav a:hover {
-            color: #ff6b00;
-        }
-        body.dark-mode .search-bar {
-            background: #11111f;
-        }
-        body.dark-mode .search-bar input {
-            background: #1a1a2e;
-            color: #f0f0f0;
-            border: 1px solid #333;
-        }
-        body.dark-mode .search-bar button {
-            background: #ff6b00;
-            color: #fff;
-        }
-        body.dark-mode .torrent-row {
-            background: #1a1a2e;
-            border-bottom-color: #2a2a3e;
-        }
-        body.dark-mode .torrent-row:hover {
-            background: #222244;
-        }
-        body.dark-mode .torrent-row .title a {
-            color: #66ccff;
-        }
-        body.dark-mode .torrent-header {
-            background: #1a1a2e;
-            color: #fff;
-        }
-        body.dark-mode .category-tag {
-            background: #ff6b00;
-            color: #fff;
-        }
-        body.dark-mode .download-btn-small {
-            background: #28a745;
-            color: #fff;
-        }
-        body.dark-mode .empty-state {
-            background: #1a1a2e;
-            color: #ccc;
-        }
-        body.dark-mode .empty-state h2 {
-            color: #f0f0f0;
-        }
-        body.dark-mode .footer {
-            background: #11111f;
-            color: #888;
-        }
-        body.dark-mode .user-dropdown-content {
-            background: #1a1a2e;
-            color: #f0f0f0;
-        }
-        body.dark-mode .user-dropdown-content a {
-            color: #f0f0f0;
-        }
-        body.dark-mode .user-dropdown-content a:hover {
-            background: #2a2a4e;
-        }
-        body.dark-mode .user-info {
-            border-bottom-color: #333;
-            color: #f0f0f0;
-        }
-        body.dark-mode .user-dropdown-btn {
-            background: #1a1a2e;
-            color: #ff6b00;
-        }
-        body.dark-mode .user-dropdown-btn:hover {
-            background: #2a2a4e;
-        }
-        body.dark-mode .torrent-row .meta {
-            color: #aaa;
-        }
-        body.dark-mode .seeders { color: #66bb6a; }
-        body.dark-mode .leechers { color: #ef5350; }
-        body.dark-mode .size { color: #aaa; }
+        .header { background: #ff6b00; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; transition: background 0.3s; }
+        .header h1 { color: #fff; font-size: 24px; }
+        .header h1 a { color: #fff; text-decoration: none; }
+        .nav { background: #2c2c2c; padding: 10px 20px; display: flex; gap: 20px; flex-wrap: wrap; }
+        .nav a { color: #ccc; text-decoration: none; font-size: 14px; font-weight: 500; }
+        .nav a:hover { color: #ff6b00; }
+        .container { max-width: 900px; margin: 30px auto; padding: 0 20px; }
 
-        /* ---------- LIGHT MODE (existing) ---------- */
-        .header { 
-            background: #ff6b00; 
-            padding: 15px 20px; 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center;
-            transition: background 0.3s;
-        }
-        .header h1 { 
-            color: #fff; 
-            font-size: 24px; 
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
-        }
-        .header h1 a { 
-            color: #fff; 
-            text-decoration: none; 
-        }
-        
-        .user-panel { 
-            display: flex; 
-            gap: 10px; 
-            align-items: center;
-            position: relative;
-        }
-        .user-panel a { 
-            background: #fff; 
-            color: #ff6b00; 
-            border: none; 
-            padding: 8px 16px; 
-            border-radius: 4px; 
-            cursor: pointer; 
-            font-weight: 600; 
-            text-decoration: none; 
-            font-size: 14px;
-        }
-        .user-panel a:hover { 
-            background: #f0f0f0; 
-        }
-        
-        .user-dropdown {
-            position: relative;
-            display: inline-block;
-        }
-        .user-dropdown-btn {
-            background: #fff;
-            color: #ff6b00;
-            padding: 8px 16px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: 600;
-            border: none;
-            font-size: 14px;
-        }
-        .user-dropdown-btn:hover {
-            background: #f0f0f0;
-        }
-        .user-dropdown-content {
-            display: none;
-            position: absolute;
-            right: 0;
-            background: #fff;
-            min-width: 220px;
-            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
-            border-radius: 8px;
-            z-index: 100;
-            padding: 10px 0;
-        }
-        .user-dropdown-content a, .user-dropdown-content button {
-            color: #333;
-            padding: 10px 20px;
-            text-decoration: none;
-            display: block;
-            background: none;
-            border: none;
-            width: 100%;
-            text-align: left;
-            cursor: pointer;
-            font-size: 14px;
-        }
-        .user-dropdown-content a:hover, .user-dropdown-content button:hover {
-            background: #f5f5f5;
-        }
-        .user-dropdown:hover .user-dropdown-content {
-            display: block;
-        }
-        .user-info {
-            padding: 10px 20px;
-            border-bottom: 1px solid #eee;
-            font-weight: 600;
-            color: #333;
-        }
-        
-        .nav { 
-            background: #2c2c2c; 
-            padding: 10px 20px; 
-            display: flex; 
-            gap: 20px;
-            flex-wrap: wrap;
-        }
-        .nav a { 
-            color: #ccc; 
-            text-decoration: none; 
-            font-size: 14px; 
-            font-weight: 500;
-        }
-        .nav a:hover { 
-            color: #ff6b00; 
-        }
-        .nav a.active { 
-            color: #ff6b00; 
-        }
-        
-        .search-bar { 
-            background: #d4d0cc; 
-            padding: 15px 20px; 
-            display: flex; 
-            gap: 10px;
-        }
-        .search-bar input { 
-            flex: 1; 
-            padding: 10px 15px; 
-            border: 1px solid #bbb; 
-            border-radius: 4px; 
-            font-size: 14px;
-        }
-        .search-bar button { 
-            background: #ff6b00; 
-            color: #fff; 
-            border: none; 
-            padding: 10px 20px; 
-            border-radius: 4px; 
-            cursor: pointer; 
-            font-weight: 600;
-        }
-        .search-bar button:hover { background: #e55f00; }
-        
-        .container { 
-            max-width: 1200px; 
-            margin: 0 auto; 
-            padding: 20px;
-        }
-        
-        .torrent-list { 
-            margin-top: 20px;
-        }
-        .torrent-header { 
-            background: #4a4a4a; 
-            color: #fff; 
-            padding: 10px 15px; 
-            font-weight: 600; 
-            display: flex; 
-            justify-content: space-between;
-        }
-        .torrent-row { 
-            display: flex; 
-            padding: 12px 15px; 
-            border-bottom: 1px solid #ddd; 
-            background: #fff; 
-            align-items: center;
-            transition: background 0.2s;
-        }
-        .torrent-row:hover { 
-            background: #f9f9f9; 
-        }
-        .torrent-row .title { 
-            flex: 1;
-            min-width: 150px;
-        }
-        .torrent-row .title a { 
-            color: #0066cc; 
-            text-decoration: none; 
-            font-weight: 500;
-        }
-        .torrent-row .title a:hover { 
-            text-decoration: underline; 
-        }
-        .torrent-row .meta { 
-            display: flex; 
-            gap: 20px; 
-            font-size: 13px; 
-            color: #666;
-            flex-wrap: wrap;
-        }
-        .seeders { 
-            color: #28a745; 
-            font-weight: 600;
-        }
-        .leechers { 
-            color: #dc3545; 
-            font-weight: 600;
-        }
-        .size { 
-            color: #666; 
-            width: 80px; 
-            text-align: right;
-        }
-        .category-tag {
-            display: inline-block;
-            background: #ff6b00;
-            color: #fff;
-            padding: 2px 10px;
-            border-radius: 12px;
-            font-size: 11px;
-            font-weight: 600;
-            margin-right: 10px;
-        }
-        .download-btn-small {
-            background: #28a745;
-            color: #fff;
-            border: none;
-            padding: 6px 16px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 13px;
-            text-decoration: none;
-            display: inline-block;
-            transition: background 0.2s;
-            margin-left: 10px;
-        }
-        .download-btn-small:hover {
-            background: #218838;
-        }
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            background: #fff;
-            border-radius: 8px;
-            color: #666;
-        }
-        .empty-state h2 {
-            color: #333;
-            margin-bottom: 10px;
-        }
-        .empty-state .btn {
-            display: inline-block;
-            padding: 12px 30px;
-            background: #ff6b00;
-            color: #fff;
-            text-decoration: none;
-            border-radius: 4px;
-            font-weight: 600;
-            margin-top: 15px;
-        }
-        .empty-state .btn:hover {
-            background: #e55f00;
-        }
-        
-        .footer { 
-            background: #2c2c2c; 
-            color: #999; 
-            text-align: center; 
-            padding: 20px; 
-            margin-top: 40px; 
-            font-size: 13px;
-        }
-        .footer a { color: #ff6b00; text-decoration: none; }
+        .messages-layout { display: flex; gap: 20px; flex-wrap: wrap; }
+        .sidebar { flex: 0 0 300px; max-width: 100%; }
+        .main { flex: 1; min-width: 300px; }
 
-        @media (max-width: 700px) {
-            .torrent-row {
-                flex-wrap: wrap;
-                gap: 8px;
-            }
-            .torrent-row .meta {
-                gap: 10px;
-                font-size: 12px;
-            }
-            .size {
-                width: auto;
-                text-align: left;
-            }
-            .nav { gap: 10px; }
-            .nav a { font-size: 12px; }
+        .conversation-item { background: #fff; padding: 12px 15px; border-radius: 8px; margin-bottom: 8px; cursor: pointer; transition: background 0.3s; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .conversation-item:hover { background: #f9f9f9; }
+        .conversation-item.active { border-left: 3px solid #ff6b00; }
+        .conversation-item .name { font-weight: 600; }
+        .conversation-item .preview { font-size: 13px; color: #888; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .conversation-item .time { font-size: 11px; color: #999; float: right; }
+        .conversation-item .unread-badge { background: #ff6b00; color: #fff; border-radius: 50%; padding: 1px 6px; font-size: 10px; margin-left: 5px; }
+
+        .message-item { background: #fff; padding: 12px 15px; border-radius: 8px; margin-bottom: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .message-item .sender { font-weight: 600; }
+        .message-item .time { font-size: 11px; color: #999; }
+        .message-item .content { margin-top: 4px; word-wrap: break-word; }
+        .message-item.sent { background: #f0f7ff; border-left: 3px solid #ff6b00; }
+        .message-item .file-attachment { margin-top: 8px; padding: 8px; background: #f0f0f0; border-radius: 4px; display: inline-block; }
+        .message-item .file-attachment img { max-width: 200px; max-height: 150px; border-radius: 4px; }
+        .message-item .file-attachment a { color: #ff6b00; }
+
+        .message-input { display: flex; flex-direction: column; gap: 10px; margin-top: 15px; }
+        .message-input .input-row { display: flex; gap: 10px; align-items: flex-end; }
+        .message-input textarea { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; resize: vertical; min-height: 60px; font-family: inherit; transition: border-color 0.2s; }
+        .message-input textarea:focus { border-color: #ff6b00; outline: none; }
+        .message-input .action-buttons { display: flex; gap: 8px; }
+        .message-input .action-buttons button { padding: 8px 12px; background: #ff6b00; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 14px; }
+        .message-input .action-buttons button:hover { background: #e55f00; }
+        .message-input .action-buttons .attach-btn { background: #6c757d; }
+        .message-input .action-buttons .attach-btn:hover { background: #5a6268; }
+        .file-preview { display: none; padding: 8px; background: #f8f9fa; border-radius: 4px; border: 1px solid #ddd; align-items: center; gap: 10px; }
+        .file-preview.show { display: flex; }
+        .file-preview .file-name { font-size: 13px; flex: 1; }
+        .file-preview .remove-file { color: #dc3545; cursor: pointer; font-weight: 600; background: none; border: none; }
+
+        .btn { display: inline-block; padding: 8px 16px; background: #ff6b00; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; text-decoration: none; }
+        .btn:hover { background: #e55f00; }
+        .btn-secondary { background: #6c757d; }
+        .btn-secondary:hover { background: #5a6268; }
+        .empty { text-align: center; padding: 40px; color: #888; }
+        .loading { text-align: center; padding: 40px; color: #888; }
+
+        .user-panel { display: flex; gap: 10px; align-items: center; }
+        .user-panel a { background: #fff; color: #ff6b00; padding: 8px 16px; border-radius: 4px; text-decoration: none; font-weight: 600; }
+        .user-panel a:hover { background: #f0f0f0; }
+        .dropdown { position: relative; display: inline-block; }
+        .dropdown-btn { background: #fff; color: #ff6b00; padding: 8px 16px; border-radius: 4px; border: none; font-weight: 600; cursor: pointer; }
+        .dropdown-btn:hover { background: #f0f0f0; }
+        .dropdown-content { display: none; position: absolute; right: 0; background: #fff; min-width: 220px; box-shadow: 0 8px 16px rgba(0,0,0,0.2); border-radius: 8px; z-index: 100; padding: 10px 0; }
+        .dropdown-content a, .dropdown-content button { display: block; padding: 10px 20px; color: #333; text-decoration: none; background: none; border: none; width: 100%; text-align: left; cursor: pointer; font-size: 14px; }
+        .dropdown-content a:hover, .dropdown-content button:hover { background: #f5f5f5; }
+        .dropdown:hover .dropdown-content { display: block; }
+        .user-info { padding: 10px 20px; border-bottom: 1px solid #eee; font-weight: 600; color: #333; }
+
+        .tab-bar { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
+        .tab-bar button { padding: 8px 16px; background: #fff; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; font-weight: 500; transition: 0.2s; }
+        .tab-bar button:hover { border-color: #ff6b00; }
+        .tab-bar button.active { background: #ff6b00; color: #fff; border-color: #ff6b00; }
+
+        .new-message-btn { margin-bottom: 15px; }
+        #fileInput { display: none; }
+
+        @media (max-width: 600px) {
+            .sidebar { flex: 1 1 100%; }
+            .main { flex: 1 1 100%; }
+            .messages-layout { flex-direction: column; }
+            .notif-dropdown { min-width: 300px; right: -10px; }
         }
     </style>
 </head>
@@ -392,52 +119,47 @@
     </div>
 
     <div class="nav">
-        <a href="index.html" class="active">Home</a>
+        <a href="index.html">Home</a>
         <a href="forum.html">Forum</a>
         <a href="upload.html">📤 Upload</a>
         <a href="top100.html">🏆 Top 100</a>
         <a href="users.html">👥 Users</a>
         <a href="search.html">🔍 Search</a>
-        <a href="#">Rules</a>
-        <a href="#">Help</a>
         <a href="admin/" style="color:#ff4444;">🛡️ Admin</a>
     </div>
 
-    <div class="search-bar">
-        <input type="text" id="searchInput" placeholder="Search torrents...">
-        <button onclick="searchTorrents()">Search</button>
-    </div>
-
     <div class="container">
-        <div class="torrent-list" id="torrentList">
-            <div class="torrent-header">
-                <span>🔥 Torrents</span>
-                <span style="font-size:12px;font-weight:normal;">⬇️ Download only from the green button — no ads!</span>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:10px;">
+            <h2>💬 Messages</h2>
+            <button class="btn" onclick="openNewMessage()">✏️ New Message</button>
+        </div>
+
+        <div class="tab-bar">
+            <button class="active" onclick="switchTab('inbox')">📥 Inbox</button>
+            <button onclick="switchTab('sent')">📤 Sent</button>
+        </div>
+
+        <div class="messages-layout">
+            <div class="sidebar" id="conversationsList">
+                <div class="loading">Loading conversations...</div>
             </div>
-            <div id="torrentsContainer">
-                <div style="text-align:center;padding:40px;color:#666;">⏳ Loading torrents...</div>
+            <div class="main" id="messageView">
+                <div class="empty">Select a conversation to view messages.</div>
             </div>
         </div>
     </div>
 
-    <div class="footer">
-        <p><strong>TorrentHub</strong> — Free & Open Source Torrent Index</p>
-        <p>This site does not host files. We only index torrent metadata.</p>
-        <p>No ads. No trackers. Just community.</p>
-        <p style="margin-top:10px;">© 2026 TorrentHub | <a href="#">Terms</a> | <a href="#">Privacy</a></p>
-    </div>
-
     <script>
         const API_URL = 'https://torrenthub-api.serafimkoragin-b12.workers.dev';
+        let currentTab = 'inbox';
+        let currentConversation = null;
+        let currentUser = null;
+        let pendingFile = null;
 
-        // ---------- LOAD & APPLY SETTINGS ----------
+        // ---------- SETTINGS ----------
         function applySettings(settings) {
             if (settings.theme_color) {
                 document.getElementById('mainHeader').style.background = settings.theme_color;
-                document.querySelector('.search-bar button').style.background = settings.theme_color;
-                document.querySelectorAll('.torrent-header').forEach(el => {
-                    el.style.background = settings.theme_color;
-                });
             }
             if (settings.bg_enabled && settings.bg_image) {
                 document.body.style.backgroundImage = `url(${settings.bg_image})`;
@@ -447,11 +169,7 @@
                 document.body.style.backgroundImage = 'none';
                 document.body.style.background = '#e8e4e0';
             }
-            if (!settings.animations) {
-                document.body.style.transition = 'none';
-            } else {
-                document.body.style.transition = 'all 0.3s ease';
-            }
+            document.body.style.transition = settings.animations ? 'all 0.3s ease' : 'none';
             const darkMode = localStorage.getItem('torrenthub_darkmode') === 'true';
             if (darkMode) {
                 document.body.classList.add('dark-mode');
@@ -463,10 +181,6 @@
         function applyLocalSettings() {
             const themeColor = localStorage.getItem('torrenthub_theme') || '#ff6b00';
             document.getElementById('mainHeader').style.background = themeColor;
-            document.querySelector('.search-bar button').style.background = themeColor;
-            document.querySelectorAll('.torrent-header').forEach(el => {
-                el.style.background = themeColor;
-            });
             const bg = localStorage.getItem('torrenthub_bg');
             if (bg && bg !== 'none') {
                 document.body.style.backgroundImage = `url(${bg})`;
@@ -503,40 +217,30 @@
             }
         }
 
-        // ---------- CHECK LOGIN ----------
+        // ---------- LOGIN CHECK ----------
         async function checkLogin() {
             const token = localStorage.getItem('torrenthub_token');
-            const userPanel = document.getElementById('userPanel');
-
+            const panel = document.getElementById('userPanel');
             if (!token) {
-                userPanel.innerHTML = `
-                    <a href="login.html">Log In</a>
-                    <a href="login.html">Register</a>
-                `;
+                panel.innerHTML = `<a href="login.html">Log In</a><a href="login.html">Register</a>`;
                 return;
             }
-
             try {
                 const res = await fetch(`${API_URL}/api/auth/me`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 const data = await res.json();
-
                 if (!data.success) {
                     localStorage.removeItem('torrenthub_token');
-                    userPanel.innerHTML = `
-                        <a href="login.html">Log In</a>
-                        <a href="login.html">Register</a>
-                    `;
+                    panel.innerHTML = `<a href="login.html">Log In</a><a href="login.html">Register</a>`;
                     return;
                 }
-
+                currentUser = data.user;
                 const isAdmin = data.user.role === 'admin' || data.user.role === 'moderator';
-
-                userPanel.innerHTML = `
-                    <div class="user-dropdown">
-                        <button class="user-dropdown-btn">👤 ${data.user.nickname}</button>
-                        <div class="user-dropdown-content">
+                panel.innerHTML = `
+                    <div class="dropdown">
+                        <button class="dropdown-btn">👤 ${data.user.nickname}</button>
+                        <div class="dropdown-content">
                             <div class="user-info">⭐ ${data.user.reputation || 0} pts</div>
                             <a href="account.html">👤 My Account</a>
                             <a href="profile.html?id=${data.user.id}">📋 My Profile</a>
@@ -555,92 +259,11 @@
                         </div>
                     </div>
                 `;
-
-            } catch (err) {
-                console.error('Login check error:', err);
-                userPanel.innerHTML = `
-                    <a href="login.html">Log In</a>
-                    <a href="login.html">Register</a>
-                `;
+            } catch (e) {
+                panel.innerHTML = `<a href="login.html">Log In</a><a href="login.html">Register</a>`;
             }
         }
 
-        // ---------- LOAD TORRENTS ----------
-        async function loadTorrents() {
-            const container = document.getElementById('torrentsContainer');
-            try {
-                const res = await fetch(`${API_URL}/api/torrents`);
-                const data = await res.json();
-
-                if (!data.success || !data.torrents || data.torrents.length === 0) {
-                    container.innerHTML = `
-                        <div class="empty-state">
-                            <h2>📭 No torrents yet</h2>
-                            <p>Be the first to upload! Click the button below.</p>
-                            <a href="upload.html" class="btn">📤 Upload a Torrent</a>
-                        </div>
-                    `;
-                    return;
-                }
-
-                let html = '';
-                data.torrents.forEach(t => {
-                    const fileSize = formatFileSize(t.file_size || 0);
-                    const seeders = t.seeders || 0;
-                    const leechers = t.leechers || 0;
-                    const category = t.category || 'General';
-
-                    html += `
-                        <div class="torrent-row">
-                            <div class="title">
-                                <span class="category-tag">${category}</span>
-                                <a href="torrent.html?id=${t.id}">${t.title}</a>
-                            </div>
-                            <div class="meta">
-                                <span>📦 ${fileSize}</span>
-                                <span class="seeders">🟢 ${seeders}</span>
-                                <span class="leechers">🔴 ${leechers}</span>
-                                <span>👤 <a href="profile.html?id=${t.uploader_id}" style="color:#666;text-decoration:none;">${t.nickname || t.username}</a></span>
-                                <a href="/api/torrents/${t.id}/download" class="download-btn-small" target="_blank">
-                                    ⬇️ Download
-                                </a>
-                            </div>
-                        </div>
-                    `;
-                });
-
-                container.innerHTML = html;
-
-            } catch (err) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <h2>❌ Error loading torrents</h2>
-                        <p>${err.message}</p>
-                    </div>
-                `;
-                console.error('Load torrents error:', err);
-            }
-        }
-
-        function formatFileSize(bytes) {
-            if (bytes === 0) return 'Unknown';
-            const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
-            const i = Math.floor(Math.log(bytes) / Math.log(1024));
-            return (bytes / Math.pow(1024, i)).toFixed(1) + ' ' + sizes[i];
-        }
-
-        // ---------- SEARCH ----------
-        function searchTorrents() {
-            const query = document.getElementById('searchInput').value.trim();
-            if (!query) { loadTorrents(); return; }
-            window.location.href = `search.html?q=${encodeURIComponent(query)}&type=torrents`;
-        }
-
-        document.getElementById('searchInput').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') searchTorrents();
-        });
-
-        // ---------- LOGOUT ----------
         function logout() {
             const token = localStorage.getItem('torrenthub_token');
             if (token) {
@@ -651,52 +274,302 @@
             }
             localStorage.removeItem('torrenthub_token');
             localStorage.removeItem('torrenthub_user');
-            window.location.reload();
+            window.location.href = 'index.html';
+        }
+
+        // ---------- SWITCH TAB ----------
+        function switchTab(tab) {
+            currentTab = tab;
+            document.querySelectorAll('.tab-bar button').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-bar button').forEach(b => {
+                if (b.textContent.includes(tab === 'inbox' ? 'Inbox' : 'Sent')) {
+                    b.classList.add('active');
+                }
+            });
+            loadConversations();
+        }
+
+        // ---------- LOAD CONVERSATIONS ----------
+        async function loadConversations() {
+            const container = document.getElementById('conversationsList');
+            const token = localStorage.getItem('torrenthub_token');
+            if (!token) {
+                container.innerHTML = `<div class="empty">Please <a href="login.html">log in</a>.</div>`;
+                return;
+            }
+
+            container.innerHTML = '<div class="loading">Loading...</div>';
+
+            try {
+                const endpoint = currentTab === 'inbox' ? '/api/messages/inbox' : '/api/messages/sent';
+                const res = await fetch(`${API_URL}${endpoint}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+                if (!data.success) throw new Error(data.error);
+
+                renderConversations(data.messages || []);
+            } catch (err) {
+                container.innerHTML = `<div style="color:red;padding:20px;">Error: ${err.message}</div>`;
+            }
+        }
+
+        function renderConversations(messages) {
+            const container = document.getElementById('conversationsList');
+
+            if (!messages || messages.length === 0) {
+                container.innerHTML = `<div class="empty">No messages.</div>`;
+                document.getElementById('messageView').innerHTML = `<div class="empty">Select a conversation to view messages.</div>`;
+                return;
+            }
+
+            const conversations = {};
+            messages.forEach(m => {
+                const otherId = currentTab === 'inbox' ? m.sender_id : m.receiver_id;
+                const otherName = currentTab === 'inbox' ? m.nickname || m.username : m.nickname || m.username;
+                const avatar = m.avatar_url || '';
+                if (!conversations[otherId]) {
+                    conversations[otherId] = {
+                        id: otherId,
+                        name: otherName,
+                        avatar: avatar,
+                        lastMessage: m.message,
+                        lastTime: m.created_at,
+                        unread: m.read === 0
+                    };
+                } else {
+                    if (new Date(m.created_at) > new Date(conversations[otherId].lastTime)) {
+                        conversations[otherId].lastMessage = m.message;
+                        conversations[otherId].lastTime = m.created_at;
+                    }
+                    if (m.read === 0) conversations[otherId].unread = true;
+                }
+            });
+
+            let html = '';
+            Object.values(conversations).sort((a, b) => new Date(b.lastTime) - new Date(a.lastTime)).forEach(c => {
+                const time = new Date(c.lastTime).toLocaleDateString();
+                html += `
+                    <div class="conversation-item ${currentConversation === c.id ? 'active' : ''}" onclick="loadConversation(${c.id})">
+                        <div>
+                            <span class="name">${c.name}</span>
+                            ${c.unread ? `<span class="unread-badge">●</span>` : ''}
+                            <span class="time">${time}</span>
+                        </div>
+                        <div class="preview">${c.lastMessage.substring(0, 50)}${c.lastMessage.length > 50 ? '...' : ''}</div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        // ---------- LOAD CONVERSATION ----------
+        async function loadConversation(otherUserId) {
+            currentConversation = otherUserId;
+            const container = document.getElementById('messageView');
+            const token = localStorage.getItem('torrenthub_token');
+            if (!token) return;
+
+            container.innerHTML = '<div class="loading">Loading messages...</div>';
+
+            try {
+                const res = await fetch(`${API_URL}/api/messages/conversation/${otherUserId}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+                if (!data.success) throw new Error(data.error);
+
+                renderMessages(data.messages || [], otherUserId);
+                loadConversations();
+            } catch (err) {
+                container.innerHTML = `<div style="color:red;padding:20px;">Error: ${err.message}</div>`;
+            }
+        }
+
+        function renderMessages(messages, otherUserId) {
+            const container = document.getElementById('messageView');
+
+            let html = `<div style="max-height:500px;overflow-y:auto;margin-bottom:15px;">`;
+            if (messages.length === 0) {
+                html += `<div class="empty">No messages yet. Send the first message!</div>`;
+            } else {
+                messages.forEach(m => {
+                    const isSent = m.sender_id === (currentUser ? currentUser.id : -1);
+                    const senderName = isSent ? 'You' : (m.sender_nickname || m.sender_username || 'Unknown');
+                    const time = new Date(m.created_at).toLocaleString();
+                    let contentHtml = m.message;
+                    if (m.message && m.message.startsWith('data:')) {
+                        const isImage = m.message.startsWith('data:image');
+                        if (isImage) {
+                            contentHtml = `<div class="file-attachment"><img src="${m.message}" alt="Shared image" /></div>`;
+                        } else {
+                            const fileName = 'shared_file';
+                            contentHtml = `<div class="file-attachment"><a href="${m.message}" download="${fileName}" target="_blank">📎 Download file</a></div>`;
+                        }
+                    }
+                    html += `
+                        <div class="message-item ${isSent ? 'sent' : ''}">
+                            <div class="sender">${senderName} <span class="time">${time}</span></div>
+                            <div class="content">${contentHtml}</div>
+                        </div>
+                    `;
+                });
+            }
+            html += `</div>`;
+
+            html += `
+                <div class="message-input">
+                    <div class="file-preview" id="filePreview">
+                        <span class="file-name" id="fileName">No file selected</span>
+                        <button class="remove-file" onclick="removePendingFile()">✕</button>
+                    </div>
+                    <div class="input-row">
+                        <textarea id="messageInput" placeholder="Type a message..." rows="2"></textarea>
+                        <div class="action-buttons">
+                            <button class="attach-btn" onclick="document.getElementById('fileInput').click()">📎</button>
+                            <button onclick="sendMessage(${otherUserId})">Send</button>
+                        </div>
+                    </div>
+                    <input type="file" id="fileInput" accept="image/*,audio/*,video/*,.pdf,.zip,.txt" onchange="handleFileSelect(event)" />
+                </div>
+            `;
+
+            container.innerHTML = html;
+
+            const scrollDiv = container.querySelector('div[style*="max-height"]');
+            if (scrollDiv) {
+                scrollDiv.scrollTop = scrollDiv.scrollHeight;
+            }
+
+            document.getElementById('messageInput').addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage(otherUserId);
+                }
+            });
+        }
+
+        // ---------- FILE HANDLING ----------
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            pendingFile = file;
+            const preview = document.getElementById('filePreview');
+            const fileNameEl = document.getElementById('fileName');
+            fileNameEl.textContent = file.name + ' (' + formatFileSize(file.size) + ')';
+            preview.classList.add('show');
+            event.target.value = '';
+        }
+
+        function removePendingFile() {
+            pendingFile = null;
+            document.getElementById('filePreview').classList.remove('show');
+        }
+
+        function formatFileSize(bytes) {
+            if (!bytes) return '0 B';
+            const sizes = ['B', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(1024));
+            return (bytes / Math.pow(1024, i)).toFixed(1) + ' ' + sizes[i];
+        }
+
+        // ---------- SEND MESSAGE ----------
+        async function sendMessage(receiverId) {
+            const input = document.getElementById('messageInput');
+            let message = input.value.trim();
+            const file = pendingFile;
+
+            if (!message && !file) {
+                alert('Please enter a message or attach a file.');
+                return;
+            }
+
+            const token = localStorage.getItem('torrenthub_token');
+            if (!token) {
+                alert('Please log in.');
+                return;
+            }
+
+            if (file) {
+                try {
+                    const reader = new FileReader();
+                    const base64 = await new Promise((resolve) => {
+                        reader.onload = (e) => resolve(e.target.result);
+                        reader.readAsDataURL(file);
+                    });
+                    if (message) {
+                        message = message + '\n[File: ' + file.name + '] ' + base64;
+                    } else {
+                        message = base64;
+                    }
+                    removePendingFile();
+                } catch (err) {
+                    alert('Failed to read file: ' + err.message);
+                    return;
+                }
+            }
+
+            try {
+                const res = await fetch(`${API_URL}/api/messages`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        receiver_id: receiverId,
+                        subject: 'Message',
+                        message: message
+                    })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    input.value = '';
+                    loadConversation(receiverId);
+                } else {
+                    alert('Failed to send: ' + data.error);
+                }
+            } catch (err) {
+                alert('Network error: ' + err.message);
+            }
+        }
+
+        // ---------- NEW MESSAGE ----------
+        function openNewMessage() {
+            const params = new URLSearchParams(window.location.search);
+            const to = params.get('to');
+            if (to) {
+                loadConversation(parseInt(to));
+                return;
+            }
+            const userId = prompt('Enter the user ID to message:');
+            if (userId && /^\d+$/.test(userId)) {
+                loadConversation(parseInt(userId));
+            }
+        }
+
+        // ---------- POLLING ----------
+        function checkNewMessages() {
+            if (currentConversation) {
+                loadConversation(currentConversation);
+            }
+            loadConversations();
         }
 
         // ---------- INIT ----------
         loadSettingsAndApply();
         checkLogin();
-        loadTorrents();
-    </script>
-    const API_URL = 'https://torrenthub-api.serafimkoragin-b12.workers.dev';
+        loadConversations();
 
-function applySettings(settings) {
-    if (settings.theme_color) {
-        document.getElementById('mainHeader').style.background = settings.theme_color;
-    }
-    if (settings.bg_enabled && settings.bg_image) {
-        document.body.style.backgroundImage = `url(${settings.bg_image})`;
-        document.body.style.backgroundSize = 'cover';
-        document.body.style.backgroundAttachment = 'fixed';
-    } else {
-        document.body.style.backgroundImage = 'none';
-        document.body.style.background = '#e8e4e0';
-    }
-    document.body.style.transition = settings.animations ? 'all 0.3s ease' : 'none';
-    const darkMode = localStorage.getItem('torrenthub_darkmode') === 'true';
-    if (darkMode) {
-        document.body.classList.add('dark-mode');
-    } else {
-        document.body.classList.remove('dark-mode');
-    }
-}
+        setInterval(checkNewMessages, 15000);
 
-async function loadSettingsAndApply() {
-    const token = localStorage.getItem('torrenthub_token');
-    if (!token) return;
-    try {
-        const res = await fetch(`${API_URL}/api/auth/settings`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        const data = await res.json();
-        if (data.success) {
-            applySettings(data.settings);
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('to')) {
+            setTimeout(() => {
+                loadConversation(parseInt(params.get('to')));
+            }, 1000);
         }
-    } catch (e) {}
-}
-
-// Call on page load
-loadSettingsAndApply();
+    </script>
 </body>
 </html>
