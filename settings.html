@@ -65,6 +65,11 @@
             background: #1a1a2e;
             border-color: #444;
         }
+        body.dark-mode .warning-box {
+            background: #2a1a1a;
+            border-color: #dc3545;
+            color: #ff6b6b;
+        }
 
         .header {
             background: #ff6b00;
@@ -271,6 +276,36 @@
             font-weight: 600;
             color: #555;
         }
+
+        /* ⚠️ RED WARNING BOX */
+        .warning-box {
+            background: #fff3cd;
+            border: 2px solid #dc3545;
+            color: #721c24;
+            padding: 12px 16px;
+            border-radius: 6px;
+            margin: 8px 0 12px 0;
+            display: none;
+            font-size: 14px;
+            font-weight: 500;
+            align-items: center;
+            gap: 10px;
+        }
+        .warning-box.show {
+            display: flex;
+        }
+        .warning-box .icon {
+            font-size: 20px;
+        }
+        .warning-box .text {
+            flex: 1;
+        }
+        body.dark-mode .warning-box {
+            background: #2a1a1a;
+            border-color: #dc3545;
+            color: #ff6b6b;
+        }
+
         @media (max-width: 600px) {
             .setting-row {
                 flex-wrap: wrap;
@@ -384,6 +419,13 @@
 
                 <div class="settings-box">
                     <h3>🖼️ Background Image</h3>
+
+                    <!-- ⚠️ RED WARNING BOX -->
+                    <div class="warning-box" id="imageWarning">
+                        <span class="icon">⚠️</span>
+                        <span class="text"><strong>URL images are more reliable.</strong> Uploaded images are compressed and may lose quality. For best results, use an image URL.</span>
+                    </div>
+
                     <div class="setting-row">
                         <label>Enable Background</label>
                         <div class="toggle-switch ${s.bg_enabled ? 'active' : ''}" onclick="toggleBg()">
@@ -397,7 +439,7 @@
                     </div>
                     <div class="setting-row">
                         <label>Or Enter URL</label>
-                        <input type="url" id="bgImage" value="${s.bg_image || ''}" placeholder="https://example.com/image.jpg" oninput="updatePreview()" />
+                        <input type="url" id="bgImage" value="${s.bg_image || ''}" placeholder="https://example.com/image.jpg" oninput="handleUrlInput()" />
                     </div>
                     <div class="setting-row" style="border-bottom:none;">
                         <label>Preview</label>
@@ -466,6 +508,28 @@
             }
         }
 
+        // ---------- Show/Hide Warning ----------
+        function showWarning(show) {
+            const warning = document.getElementById('imageWarning');
+            if (warning) {
+                if (show) {
+                    warning.classList.add('show');
+                } else {
+                    warning.classList.remove('show');
+                }
+            }
+        }
+
+        // ---------- Handle URL Input ----------
+        function handleUrlInput() {
+            // Hide warning when user types a URL
+            const url = document.getElementById('bgImage').value;
+            if (url && url.startsWith('http')) {
+                showWarning(false);
+            }
+            updatePreview();
+        }
+
         // ---------- Image Compression ----------
         function compressImage(file, maxWidth = 800, quality = 0.8) {
             return new Promise((resolve) => {
@@ -487,7 +551,6 @@
                         const ctx = canvas.getContext('2d');
                         ctx.drawImage(img, 0, 0, width, height);
 
-                        // Convert to JPEG with quality setting
                         const dataUrl = canvas.toDataURL('image/jpeg', quality);
                         resolve(dataUrl);
                     };
@@ -502,11 +565,12 @@
             const file = event.target.files[0];
             if (!file) return;
 
+            // ⚠️ SHOW RED WARNING when user uploads a file
+            showWarning(true);
+
             try {
-                // Show loading state
                 showTemporaryMessage('⏳ Compressing image...');
 
-                // Compress the image
                 const compressedDataUrl = await compressImage(file, 800, 0.75);
 
                 document.getElementById('bgImage').value = compressedDataUrl;
@@ -562,7 +626,7 @@
             const animations = currentSettings.animations;
 
             // Check if image is too large (over 1MB in base64)
-            if (bgImage && bgImage.length > 800000) {
+            if (bgImage && bgImage.length > 1000000) {
                 showTemporaryMessage('⚠️ Image too large! Please upload a smaller image or use a URL.');
                 return;
             }
@@ -592,6 +656,8 @@
                     localStorage.setItem('torrenthub_theme', themeColor);
                     localStorage.setItem('torrenthub_animations', animations);
                     localStorage.setItem('torrenthub_bg', bgEnabled && bgImage ? bgImage : 'none');
+                    // Hide warning after save
+                    showWarning(false);
                 } else {
                     showTemporaryMessage('❌ Failed to save: ' + (data.error || 'Unknown error'));
                 }
@@ -618,6 +684,7 @@
             document.body.style.backgroundImage = 'none';
             document.body.style.background = '#e8e4e0';
             document.querySelector('.header').style.background = '#ff6b00';
+            showWarning(false);
             updatePreview();
             saveSettings();
         }
@@ -639,6 +706,10 @@
         // ---------- Listen for input changes ----------
         document.addEventListener('input', function(e) {
             if (e.target && e.target.id === 'bgImage') {
+                const url = e.target.value;
+                if (url && url.startsWith('http')) {
+                    showWarning(false);
+                }
                 updatePreview();
             }
         });
