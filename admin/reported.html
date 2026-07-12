@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Reported Content - TorrentHub</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #e8e4e0; color: #333; transition: all 0.3s ease; }
+        body.dark-mode { background: #1a1a2e; color: #e0e0e0; }
+        body.dark-mode .admin-card { background: #2a2a3e; color: #e0e0e0; }
+        body.dark-mode .nav { background: #16162a; }
+        body.dark-mode .nav a { color: #aaa; }
+        body.dark-mode .nav a:hover { color: #ff6b00; }
+        body.dark-mode .dropdown-content { background: #2a2a3e; color: #e0e0e0; }
+        body.dark-mode .dropdown-content a { color: #e0e0e0; }
+        body.dark-mode .dropdown-content a:hover { background: #3a3a5e; }
+        body.dark-mode .user-info { border-bottom-color: #444; color: #e0e0e0; }
+        body.dark-mode .report-item { border-bottom-color: #444; }
+
+        .header { background: #ff6b00; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; transition: background 0.3s; }
+        .header h1 { color: #fff; font-size: 24px; }
+        .header h1 a { color: #fff; text-decoration: none; }
+        .nav { background: #2c2c2c; padding: 10px 20px; display: flex; gap: 20px; flex-wrap: wrap; }
+        .nav a { color: #ccc; text-decoration: none; font-size: 14px; font-weight: 500; }
+        .nav a:hover { color: #ff6b00; }
+        .nav a.active { color: #ff6b00; }
+        .container { max-width: 1000px; margin: 30px auto; padding: 0 20px; }
+
+        .admin-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
+        .admin-badge { background: #dc3545; color: #fff; padding: 2px 12px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+
+        .admin-card { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); transition: background 0.3s; }
+        .admin-card h3 { border-bottom: 2px solid #ff6b00; padding-bottom: 10px; margin-bottom: 15px; }
+
+        .report-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #eee; flex-wrap: wrap; gap: 10px; }
+        .report-item .info { flex: 1; }
+        .report-item .info .title { font-weight: 600; }
+        .report-item .info .meta { font-size: 12px; color: #888; }
+        .report-item .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+        .btn { padding: 6px 14px; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; text-decoration: none; display: inline-block; font-size: 13px; }
+        .btn-success { background: #28a745; color: #fff; }
+        .btn-success:hover { background: #218838; }
+        .btn-danger { background: #dc3545; color: #fff; }
+        .btn-danger:hover { background: #c82333; }
+        .btn-secondary { background: #6c757d; color: #fff; }
+        .btn-secondary:hover { background: #5a6268; }
+
+        .user-panel { display: flex; gap: 10px; align-items: center; }
+        .user-panel a { background: #fff; color: #ff6b00; padding: 8px 16px; border-radius: 4px; text-decoration: none; font-weight: 600; }
+        .user-panel a:hover { background: #f0f0f0; }
+        .dropdown { position: relative; display: inline-block; }
+        .dropdown-btn { background: #fff; color: #ff6b00; padding: 8px 16px; border-radius: 4px; border: none; font-weight: 600; cursor: pointer; }
+        .dropdown-btn:hover { background: #f0f0f0; }
+        .dropdown-content { display: none; position: absolute; right: 0; background: #fff; min-width: 220px; box-shadow: 0 8px 16px rgba(0,0,0,0.2); border-radius: 8px; z-index: 100; padding: 10px 0; }
+        .dropdown-content a, .dropdown-content button { display: block; padding: 10px 20px; color: #333; text-decoration: none; background: none; border: none; width: 100%; text-align: left; cursor: pointer; font-size: 14px; }
+        .dropdown-content a:hover, .dropdown-content button:hover { background: #f5f5f5; }
+        .dropdown:hover .dropdown-content { display: block; }
+        .user-info { padding: 10px 20px; border-bottom: 1px solid #eee; font-weight: 600; color: #333; }
+
+        .loading { text-align: center; padding: 20px; color: #888; }
+        .empty { text-align: center; padding: 20px; color: #888; }
+        .pagination { display: flex; gap: 10px; justify-content: center; margin-top: 20px; flex-wrap: wrap; }
+        .pagination button { padding: 6px 14px; border: 1px solid #ddd; border-radius: 4px; background: #fff; cursor: pointer; }
+        body.dark-mode .pagination button { background: #2a2a3e; color: #e0e0e0; border-color: #444; }
+        .pagination button:hover { border-color: #ff6b00; }
+        .pagination button.active { background: #ff6b00; color: #fff; border-color: #ff6b00; }
+    </style>
+</head>
+<body>
+
+    <div class="header" id="mainHeader">
+        <h1><a href="index.html">🔥 TorrentHub</a></h1>
+        <div class="user-panel" id="userPanel">
+            <a href="login.html">Log In</a>
+            <a href="login.html">Register</a>
+        </div>
+    </div>
+
+    <div class="nav">
+        <a href="index.html">Home</a>
+        <a href="forum.html">Forum</a>
+        <a href="upload.html">📤 Upload</a>
+        <a href="top100.html">🏆 Top 100</a>
+        <a href="users.html">👥 Users</a>
+        <a href="search.html">🔍 Search</a>
+        <a href="admin/" class="active" style="color:#ff4444;">🛡️ Admin</a>
+    </div>
+
+    <div class="container">
+        <div class="admin-header">
+            <h2>🚩 Reported Content <span class="admin-badge">Admin</span></h2>
+            <a href="index.html" class="btn btn-secondary">← Back to Dashboard</a>
+        </div>
+
+        <div class="admin-card">
+            <h3>Pending Reports</h3>
+            <div id="reportedList"><div class="loading">Loading reported content...</div></div>
+            <div class="pagination" id="pagination"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'https://torrenthub-api.serafimkoragin-b12.workers.dev';
+        let currentPage = 1;
+
+        // ---------- SETTINGS ----------
+        function applySettings(settings) {
+            if (settings.theme_color) {
+                document.getElementById('mainHeader').style.background = settings.theme_color;
+            }
+            if (settings.bg_enabled && settings.bg_image) {
+                document.body.style.backgroundImage = `url(${settings.bg_image})`;
+                document.body.style.backgroundSize = 'cover';
+                document.body.style.backgroundAttachment = 'fixed';
+            } else {
+                document.body.style.backgroundImage = 'none';
+                document.body.style.background = '#e8e4e0';
+            }
+            document.body.style.transition = settings.animations ? 'all 0.3s ease' : 'none';
+            const darkMode = localStorage.getItem('torrenthub_darkmode') === 'true';
+            if (darkMode) {
+                document.body.classList.add('dark-mode');
+            } else {
+                document.body.classList.remove('dark-mode');
+            }
+        }
+
+        function applyLocalSettings() {
+            const themeColor = localStorage.getItem('torrenthub_theme') || '#ff6b00';
+            document.getElementById('mainHeader').style.background = themeColor;
+            const bg = localStorage.getItem('torrenthub_bg');
+            if (bg && bg !== 'none') {
+                document.body.style.backgroundImage = `url(${bg})`;
+                document.body.style.backgroundSize = 'cover';
+                document.body.style.backgroundAttachment = 'fixed';
+            } else {
+                document.body.style.backgroundImage = 'none';
+                document.body.style.background = '#e8e4e0';
+            }
+            const animations = localStorage.getItem('torrenthub_animations') !== 'false';
+            document.body.style.transition = animations ? 'all 0.3s ease' : 'none';
+            if (localStorage.getItem('torrenthub_darkmode') === 'true') {
+                document.body.classList.add('dark-mode');
+            } else {
+                document.body.classList.remove('dark-mode');
+            }
+        }
+
+        async function loadSettingsAndApply() {
+            const token = localStorage.getItem('torrenthub_token');
+            if (!token) return;
+            try {
+                const res = await fetch(`${API_URL}/api/auth/settings`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+                if (data.success) {
+                    applySettings(data.settings);
+                } else {
+                    applyLocalSettings();
+                }
+            } catch (e) {
+                applyLocalSettings();
+            }
+        }
+
+        // ---------- LOGIN CHECK ----------
+        async function checkLogin() {
+            const token = localStorage.getItem('torrenthub_token');
+            const panel = document.getElementById('userPanel');
+            if (!token) {
+                panel.innerHTML = `<a href="login.html">Log In</a><a href="login.html">Register</a>`;
+                return;
+            }
+            try {
+                const res = await fetch(`${API_URL}/api/auth/me`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+                if (!data.success) {
+                    localStorage.removeItem('torrenthub_token');
+                    panel.innerHTML = `<a href="login.html">Log In</a><a href="login.html">Register</a>`;
+                    return;
+                }
+                if (data.user.role !== 'admin' && data.user.role !== 'moderator') {
+                    window.location.href = 'index.html';
+                    return;
+                }
+                const isAdmin = data.user.role === 'admin' || data.user.role === 'moderator';
+                panel.innerHTML = `
+                    <div class="dropdown">
+                        <button class="dropdown-btn">👤 ${data.user.nickname}</button>
+                        <div class="dropdown-content">
+                            <div class="user-info">⭐ ${data.user.reputation || 0} pts</div>
+                            <a href="account.html">👤 My Account</a>
+                            <a href="profile.html?id=${data.user.id}">📋 My Profile</a>
+                            <a href="edit-profile.html">✏️ Edit Profile</a>
+                            <a href="upload.html">📤 Upload</a>
+                            <a href="forum.html">📚 Forum</a>
+                            <a href="top100.html">🏆 Top 100</a>
+                            <a href="users.html">👥 Users</a>
+                            <a href="search.html">🔍 Search</a>
+                            <a href="notifications.html">🔔 Notifications</a>
+                            <a href="messages.html">💬 Messages</a>
+                            <a href="badges.html">🏅 Badges</a>
+                            <a href="settings.html">⚙️ Settings</a>
+                            ${isAdmin ? `<a href="admin/" style="color:#ff4444;">🛡️ Admin Panel</a>` : ''}
+                            <a href="#" onclick="logout()">🚪 Log Out</a>
+                        </div>
+                    </div>
+                `;
+                loadReported(1);
+            } catch (e) {
+                panel.innerHTML = `<a href="login.html">Log In</a><a href="login.html">Register</a>`;
+            }
+        }
+
+        function logout() {
+            const token = localStorage.getItem('torrenthub_token');
+            if (token) {
+                fetch(`${API_URL}/api/auth/logout`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                }).catch(() => {});
+            }
+            localStorage.removeItem('torrenthub_token');
+            localStorage.removeItem('torrenthub_user');
+            window.location.href = 'index.html';
+        }
+
+        // ---------- LOAD REPORTED ----------
+        async function loadReported(page) {
+            currentPage = page || 1;
+            const container = document.getElementById('reportedList');
+            const token = localStorage.getItem('torrenthub_token');
+            if (!token) return;
+
+            const limit = 20;
+            const offset = (currentPage - 1) * limit;
+
+            container.innerHTML = '<div class="loading">Loading reported content...</div>';
+
+            try {
+                const res = await fetch(`${API_URL}/api/admin/reported?limit=${limit}&offset=${offset}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+                renderReported(data.reported || [], data.total || 0);
+            } catch (err) {
+                container.innerHTML = `<div style="color:red;padding:20px;">Error: ${err.message}</div>`;
+            }
+        }
+
+        function renderReported(items, total) {
+            const container = document.getElementById('reportedList');
+
+            if (!items || items.length === 0) {
+                container.innerHTML = '<div class="empty">No reported content found.</div>';
+                document.getElementById('pagination').innerHTML = '';
+                return;
+            }
+
+            let html = '';
+            items.forEach(item => {
+                html += `
+                    <div class="report-item">
+                        <div class="info">
+                            <div class="title">${item.title || 'Untitled'}</div>
+                            <div class="meta">
+                                👤 <a href="../profile.html?id=${item.uploader_id}" style="color:#888;text-decoration:none;">${item.nickname || item.username}</a>
+                                · 📂 ${item.category || 'General'}
+                                · 📅 ${new Date(item.created_at).toLocaleDateString()}
+                                · 📦 ${formatFileSize(item.file_size)}
+                            </div>
+                        </div>
+                        <div class="actions">
+                            <button class="btn btn-success" onclick="approveTorrent(${item.id})">✅ Approve</button>
+                            <button class="btn btn-danger" onclick="rejectTorrent(${item.id})">❌ Reject</button>
+                            <a href="../torrent.html?id=${item.id}" class="btn btn-secondary" target="_blank">👁️ View</a>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+
+            // Pagination
+            const totalPages = Math.ceil(total / 20);
+            const paginationEl = document.getElementById('pagination');
+            if (totalPages > 1) {
+                let pagHtml = '';
+                for (let i = 1; i <= Math.min(totalPages, 10); i++) {
+                    pagHtml += `<button class="${i === currentPage ? 'active' : ''}" onclick="loadReported(${i})">${i}</button>`;
+                }
+                paginationEl.innerHTML = pagHtml;
+            } else {
+                paginationEl.innerHTML = '';
+            }
+        }
+
+        function formatFileSize(bytes) {
+            if (!bytes || bytes === 0) return 'Unknown';
+            const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(1024));
+            return (bytes / Math.pow(1024, i)).toFixed(1) + ' ' + sizes[i];
+        }
+
+        // ---------- ACTIONS ----------
+        async function approveTorrent(torrentId) {
+            const token = localStorage.getItem('torrenthub_token');
+            if (!token) return;
+            try {
+                const res = await fetch(`${API_URL}/api/admin/torrents/${torrentId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ action: 'approve' })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    loadReported(currentPage);
+                } else {
+                    alert('Approve failed: ' + data.error);
+                }
+            } catch (err) {
+                alert('Network error: ' + err.message);
+            }
+        }
+
+        async function rejectTorrent(torrentId) {
+            if (!confirm('Reject this torrent?')) return;
+            const token = localStorage.getItem('torrenthub_token');
+            if (!token) return;
+            try {
+                const res = await fetch(`${API_URL}/api/admin/torrents/${torrentId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ action: 'reject' })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    loadReported(currentPage);
+                } else {
+                    alert('Reject failed: ' + data.error);
+                }
+            } catch (err) {
+                alert('Network error: ' + err.message);
+            }
+        }
+
+        // ---------- INIT ----------
+        loadSettingsAndApply();
+        checkLogin();
+    </script>
+</body>
+</html>
