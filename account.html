@@ -19,52 +19,12 @@
     .info-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #eee; }
     .info-row label { font-weight: 600; color: #555; }
     .info-row span { color: #333; }
-    .btn { padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; margin-right: 10px; margin-top: 15px; font-size: 14px; }
+    .btn { padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; margin-right: 10px; margin-top: 15px; }
     .btn-orange { background: #ff6b00; color: #fff; }
-    .btn-orange:hover { background: #e55f00; }
     .btn-red { background: #dc3545; color: #fff; }
-    .btn-red:hover { background: #c82333; }
     .btn-gray { background: #6c757d; color: #fff; }
-    .btn-gray:hover { background: #5a6268; }
-    .btn:disabled { opacity: 0.6; cursor: not-allowed; }
-    .warning-box { background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; padding: 20px; border-radius: 4px; margin-top: 20px; display: none; }
-    .warning-box.active { display: block; }
-    .alt-account { display: flex; justify-content: space-between; align-items: center; padding: 12px; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 10px; background: #f9f9f9; }
-    .alt-account button { padding: 6px 12px; background: #dc3545; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; }
     .loading { text-align: center; padding: 40px; color: #666; }
-
-    /* Modal styles */
-    .modal-overlay {
-      display: none;
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0,0,0,0.5);
-      justify-content: center;
-      align-items: center;
-      z-index: 1000;
-    }
-    .modal-overlay.active { display: flex; }
-    .modal-box {
-      background: #fff;
-      padding: 30px;
-      border-radius: 8px;
-      width: 450px;
-      max-width: 90%;
-      max-height: 90vh;
-      overflow-y: auto;
-    }
-    .modal-box h3 { margin-bottom: 20px; color: #333; border-bottom: 2px solid #ff6b00; padding-bottom: 10px; }
-    .modal-box .input-group { margin-bottom: 15px; }
-    .modal-box .input-group label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 14px; color: #555; }
-    .modal-box .input-group input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; }
-    .modal-box .input-group input:focus { border-color: #ff6b00; outline: none; }
-    .modal-box .btn { width: 100%; margin-top: 10px; }
-    .error-text { color: #dc3545; font-size: 13px; margin-top: 5px; display: none; }
-    .error-text.active { display: block; }
-    .modal-hint { font-size: 12px; color: #666; margin-top: 5px; }
-    .modal-2fa { background: #fff3cd; border: 1px solid #ffc107; padding: 12px; border-radius: 4px; margin-bottom: 15px; display: none; }
-    .modal-2fa.active { display: block; }
-    .modal-2fa strong { color: #856404; }
+    .error-box { background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; padding: 20px; border-radius: 4px; margin: 20px; }
   </style>
 </head>
 <body>
@@ -75,9 +35,6 @@
 
 <div class="nav">
   <a href="index.html">← Home</a>
-  <a href="#">My Torrents</a>
-  <a href="#">My Posts</a>
-  <a href="#">Settings</a>
   <a href="#" onclick="logout()">Log Out</a>
 </div>
 
@@ -85,408 +42,67 @@
   <div class="loading">⏳ Loading your account...</div>
 </div>
 
-<!-- EDIT PROFILE MODAL -->
-<div class="modal-overlay" id="editProfileModal">
-  <div class="modal-box">
-    <h3>✏️ Edit Profile</h3>
-    <div class="error-text" id="editProfileError"></div>
-    <div class="modal-2fa" id="editProfile2FAWarning">
-      <strong>🔐 2FA Required</strong> — Enter your 6-digit verification code below.
-    </div>
-    <div class="input-group">
-      <label>Nickname</label>
-      <input type="text" id="editNickname" placeholder="Your display name">
-    </div>
-    <div class="input-group">
-      <label>Email</label>
-      <input type="email" id="editEmail" placeholder="your@email.com">
-    </div>
-    <div class="input-group" id="editProfile2FAGroup" style="display:none;">
-      <label>🔐 2FA Verification Code</label>
-      <input type="text" id="editProfile2FACode" placeholder="Enter 6-digit code" maxlength="6">
-      <div class="modal-hint">Required because 2FA is enabled on your account.</div>
-    </div>
-    <button class="btn btn-orange" onclick="saveProfile()" id="editProfileBtn">Save Changes</button>
-    <button class="btn btn-gray" onclick="closeModal('editProfileModal')">Cancel</button>
-  </div>
-</div>
-
-<!-- CHANGE PASSWORD MODAL -->
-<div class="modal-overlay" id="changePasswordModal">
-  <div class="modal-box">
-    <h3>🔒 Change Password</h3>
-    <div class="error-text" id="changePasswordError"></div>
-    <div class="modal-2fa" id="changePassword2FAWarning">
-      <strong>🔐 2FA Required</strong> — Enter your 6-digit verification code below.
-    </div>
-    <div class="input-group">
-      <label>Current Password</label>
-      <input type="password" id="currentPassword" placeholder="Enter current password">
-    </div>
-    <div class="input-group">
-      <label>New Password</label>
-      <input type="password" id="newPassword" placeholder="Min 8 characters">
-    </div>
-    <div class="input-group">
-      <label>Confirm New Password</label>
-      <input type="password" id="confirmNewPassword" placeholder="Repeat new password">
-    </div>
-    <div class="input-group" id="changePassword2FAGroup" style="display:none;">
-      <label>🔐 2FA Verification Code</label>
-      <input type="text" id="changePassword2FACode" placeholder="Enter 6-digit code" maxlength="6">
-      <div class="modal-hint">Required because 2FA is enabled on your account.</div>
-    </div>
-    <button class="btn btn-orange" onclick="savePassword()" id="changePasswordBtn">Change Password</button>
-    <button class="btn btn-gray" onclick="closeModal('changePasswordModal')">Cancel</button>
-  </div>
-</div>
-
 <script>
 const API_URL = 'https://torrenthub-api.serafimkoragin-b12.workers.dev';
-let currentUser = null;
-let userHas2FA = false;
-let editProfileRequires2FA = false;
-let changePasswordRequires2FA = false;
 
-// ---------- LOAD ACCOUNT ----------
 async function loadAccount() {
   const container = document.getElementById('mainContainer');
   const token = localStorage.getItem('torrenthub_token');
   
   if (!token) {
-    window.location.href = 'login.html';
+    container.innerHTML = `
+      <div class="error-box">
+        ❌ You are not logged in. <a href="login.html">Log in here</a>
+      </div>
+    `;
     return;
   }
-
-  container.innerHTML = '<div class="loading">⏳ Loading your account...</div>';
   
   try {
     const res = await fetch(`${API_URL}/api/auth/me`, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
+    
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+    }
+    
     const data = await res.json();
     
     if (!data.success) {
-      localStorage.removeItem('torrenthub_token');
-      window.location.href = 'login.html';
-      return;
+      throw new Error(data.error || 'Session expired');
     }
     
-    currentUser = data.user;
-    userHas2FA = data.user.two_factor_enabled;
+    const user = data.user;
     
     container.innerHTML = `
       <div class="account-box">
         <h3>👤 My Profile</h3>
-        <div class="info-row">
-          <label>Username</label>
-          <span>${currentUser.username}</span>
-        </div>
-        <div class="info-row">
-          <label>Nickname</label>
-          <span>${currentUser.nickname}</span>
-        </div>
-        <div class="info-row">
-          <label>Email</label>
-          <span>${currentUser.email}</span>
-        </div>
-        <div class="info-row">
-          <label>Member Since</label>
-          <span>July 11, 2026</span>
-        </div>
-        <div class="info-row">
-          <label>Reputation</label>
-          <span>⭐ ${currentUser.reputation || 0} points</span>
-        </div>
-        <div class="info-row">
-          <label>2-Step Verification</label>
-          <span>${currentUser.two_factor_enabled ? '✅ Enabled' : '❌ Disabled'}</span>
-        </div>
-        <button class="btn btn-orange" onclick="openEditProfile()">Edit Profile</button>
-        <button class="btn btn-gray" onclick="openChangePassword()">Change Password</button>
+        <div class="info-row"><label>Username</label><span>${user.username}</span></div>
+        <div class="info-row"><label>Nickname</label><span>${user.nickname}</span></div>
+        <div class="info-row"><label>Email</label><span>${user.email}</span></div>
+        <div class="info-row"><label>Reputation</label><span>⭐ ${user.reputation || 0} points</span></div>
+        <div class="info-row"><label>2FA</label><span>${user.two_factor_enabled ? '✅ Enabled' : '❌ Disabled'}</span></div>
+        <button class="btn btn-orange" onclick="alert('Edit profile coming soon!')">Edit Profile</button>
+        <button class="btn btn-gray" onclick="alert('Change password coming soon!')">Change Password</button>
       </div>
-
-      <div class="account-box">
-        <h3>👥 Alternative Accounts</h3>
-        <p style="color: #666; margin-bottom: 15px; font-size: 14px;">You can create up to 3 alternate accounts for different purposes.</p>
-        <div class="alt-account">
-          <div>
-            <strong>${currentUser.username}_alt1</strong> <span style="color: #999; font-size: 12px;">(Uploader)</span>
-          </div>
-          <button onclick="deleteAlt(this)">Delete</button>
-        </div>
-        <button class="btn btn-orange" style="margin-top: 15px;" onclick="alert('Alt account creation coming soon!')">+ Create Alt Account</button>
-      </div>
-
       <div class="account-box">
         <h3>⚠️ Danger Zone</h3>
-        <button class="btn btn-red" onclick="showDeleteWarning()">Delete My Account</button>
-        <div class="warning-box" id="deleteWarning">
-          <h4>🚨 Are you absolutely sure?</h4>
-          <p>This will permanently delete:</p>
-          <ul style="margin: 10px 0 10px 20px;">
-            <li>Your account and all data</li>
-            <li>All your torrent uploads</li>
-            <li>All your forum posts and comments</li>
-            <li>Your reputation and history</li>
-          </ul>
-          <p><strong>This cannot be undone!</strong></p>
-          <p style="margin-top: 10px;">Type <code>DELETE</code> to confirm:</p>
-          <input type="text" id="deleteConfirm" placeholder="Type DELETE here" style="width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #dc3545; border-radius: 4px;">
-          <button class="btn btn-red" onclick="confirmDelete()">I understand, delete everything</button>
-          <button class="btn btn-gray" onclick="hideDeleteWarning()">Cancel</button>
-        </div>
+        <button class="btn btn-red" onclick="if(confirm('Delete account?')) alert('Account deletion coming soon!')">Delete My Account</button>
       </div>
     `;
     
   } catch (err) {
-    container.innerHTML = '<div class="loading">❌ Error loading account. <a href="login.html">Please log in again</a>.</div>';
+    container.innerHTML = `
+      <div class="error-box">
+        ❌ Error loading account: ${err.message}<br>
+        <a href="login.html">Log in again</a>
+      </div>
+    `;
+    console.error('Account load error:', err);
   }
 }
 
-// ---------- EDIT PROFILE ----------
-function openEditProfile() {
-  if (!currentUser) return;
-  
-  document.getElementById('editNickname').value = currentUser.nickname;
-  document.getElementById('editEmail').value = currentUser.email;
-  document.getElementById('editProfile2FACode').value = '';
-  document.getElementById('editProfileError').classList.remove('active');
-  document.getElementById('editProfile2FAWarning').classList.remove('active');
-  
-  // Show 2FA field if user has it enabled
-  if (userHas2FA) {
-    document.getElementById('editProfile2FAGroup').style.display = 'block';
-    document.getElementById('editProfile2FAWarning').classList.add('active');
-    editProfileRequires2FA = true;
-  } else {
-    document.getElementById('editProfile2FAGroup').style.display = 'none';
-    document.getElementById('editProfile2FAWarning').classList.remove('active');
-    editProfileRequires2FA = false;
-  }
-  
-  document.getElementById('editProfileModal').classList.add('active');
-  document.getElementById('editProfileBtn').disabled = false;
-  document.getElementById('editProfileBtn').textContent = 'Save Changes';
-}
-
-async function saveProfile() {
-  const btn = document.getElementById('editProfileBtn');
-  const errorEl = document.getElementById('editProfileError');
-  
-  btn.disabled = true;
-  btn.textContent = 'Saving...';
-  errorEl.classList.remove('active');
-  
-  const nickname = document.getElementById('editNickname').value.trim();
-  const email = document.getElementById('editEmail').value.trim();
-  const twoFactorCode = document.getElementById('editProfile2FACode').value.trim();
-  
-  if (!nickname || !email) {
-    errorEl.textContent = 'Nickname and email are required';
-    errorEl.classList.add('active');
-    btn.disabled = false;
-    btn.textContent = 'Save Changes';
-    return;
-  }
-  
-  const token = localStorage.getItem('torrenthub_token');
-  if (!token) {
-    window.location.href = 'login.html';
-    return;
-  }
-  
-  try {
-    const body = { nickname, email };
-    if (userHas2FA) body.twoFactorCode = twoFactorCode;
-    
-    const res = await fetch(`${API_URL}/api/auth/update-profile`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify(body)
-    });
-    
-    const data = await res.json();
-    
-    // Check if 2FA is required
-    if (data.requires2FA) {
-      document.getElementById('editProfile2FAGroup').style.display = 'block';
-      document.getElementById('editProfile2FAWarning').classList.add('active');
-      errorEl.textContent = '2FA code required. Please enter your verification code.';
-      errorEl.classList.add('active');
-      btn.disabled = false;
-      btn.textContent = 'Save Changes';
-      return;
-    }
-    
-    if (data.success) {
-      closeModal('editProfileModal');
-      alert('✅ Profile updated successfully!');
-      loadAccount(); // Reload with new data
-    } else {
-      errorEl.textContent = data.error || 'Update failed';
-      errorEl.classList.add('active');
-    }
-  } catch (err) {
-    errorEl.textContent = 'Network error. Please try again.';
-    errorEl.classList.add('active');
-  }
-  
-  btn.disabled = false;
-  btn.textContent = 'Save Changes';
-}
-
-// ---------- CHANGE PASSWORD ----------
-function openChangePassword() {
-  document.getElementById('currentPassword').value = '';
-  document.getElementById('newPassword').value = '';
-  document.getElementById('confirmNewPassword').value = '';
-  document.getElementById('changePassword2FACode').value = '';
-  document.getElementById('changePasswordError').classList.remove('active');
-  document.getElementById('changePassword2FAWarning').classList.remove('active');
-  
-  if (userHas2FA) {
-    document.getElementById('changePassword2FAGroup').style.display = 'block';
-    document.getElementById('changePassword2FAWarning').classList.add('active');
-    changePasswordRequires2FA = true;
-  } else {
-    document.getElementById('changePassword2FAGroup').style.display = 'none';
-    document.getElementById('changePassword2FAWarning').classList.remove('active');
-    changePasswordRequires2FA = false;
-  }
-  
-  document.getElementById('changePasswordModal').classList.add('active');
-  document.getElementById('changePasswordBtn').disabled = false;
-  document.getElementById('changePasswordBtn').textContent = 'Change Password';
-}
-
-async function savePassword() {
-  const btn = document.getElementById('changePasswordBtn');
-  const errorEl = document.getElementById('changePasswordError');
-  
-  btn.disabled = true;
-  btn.textContent = 'Changing...';
-  errorEl.classList.remove('active');
-  
-  const currentPassword = document.getElementById('currentPassword').value;
-  const newPassword = document.getElementById('newPassword').value;
-  const confirmPassword = document.getElementById('confirmNewPassword').value;
-  const twoFactorCode = document.getElementById('changePassword2FACode').value.trim();
-  
-  if (!currentPassword || !newPassword || !confirmPassword) {
-    errorEl.textContent = 'All fields are required';
-    errorEl.classList.add('active');
-    btn.disabled = false;
-    btn.textContent = 'Change Password';
-    return;
-  }
-  
-  if (newPassword !== confirmPassword) {
-    errorEl.textContent = 'New passwords do not match';
-    errorEl.classList.add('active');
-    btn.disabled = false;
-    btn.textContent = 'Change Password';
-    return;
-  }
-  
-  if (newPassword.length < 8) {
-    errorEl.textContent = 'New password must be at least 8 characters';
-    errorEl.classList.add('active');
-    btn.disabled = false;
-    btn.textContent = 'Change Password';
-    return;
-  }
-  
-  const token = localStorage.getItem('torrenthub_token');
-  if (!token) {
-    window.location.href = 'login.html';
-    return;
-  }
-  
-  try {
-    const body = { currentPassword, newPassword };
-    if (userHas2FA) body.twoFactorCode = twoFactorCode;
-    
-    const res = await fetch(`${API_URL}/api/auth/change-password`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify(body)
-    });
-    
-    const data = await res.json();
-    
-    if (data.requires2FA) {
-      document.getElementById('changePassword2FAGroup').style.display = 'block';
-      document.getElementById('changePassword2FAWarning').classList.add('active');
-      errorEl.textContent = '2FA code required. Please enter your verification code.';
-      errorEl.classList.add('active');
-      btn.disabled = false;
-      btn.textContent = 'Change Password';
-      return;
-    }
-    
-    if (data.success) {
-      closeModal('changePasswordModal');
-      alert('✅ Password changed! Please log in again with your new password.');
-      logout();
-    } else {
-      errorEl.textContent = data.error || 'Password change failed';
-      errorEl.classList.add('active');
-    }
-  } catch (err) {
-    errorEl.textContent = 'Network error. Please try again.';
-    errorEl.classList.add('active');
-  }
-  
-  btn.disabled = false;
-  btn.textContent = 'Change Password';
-}
-
-// ---------- MODAL HELPERS ----------
-function closeModal(id) {
-  document.getElementById(id).classList.remove('active');
-}
-
-// Close modal when clicking outside
-window.onclick = function(event) {
-  if (event.target.classList.contains('modal-overlay')) {
-    event.target.classList.remove('active');
-  }
-};
-
-// ---------- DELETE ACCOUNT ----------
-function showDeleteWarning() {
-  document.getElementById('deleteWarning').classList.add('active');
-}
-
-function hideDeleteWarning() {
-  document.getElementById('deleteWarning').classList.remove('active');
-}
-
-function confirmDelete() {
-  const input = document.getElementById('deleteConfirm').value;
-  if (input === 'DELETE') {
-    if (confirm('⚠️ This is permanent. Are you absolutely sure?')) {
-      alert('Account deletion requested. This feature will be implemented soon.');
-    }
-  } else {
-    alert('Please type DELETE to confirm.');
-  }
-}
-
-function deleteAlt(btn) {
-  if (confirm('Delete this alt account? This cannot be undone.')) {
-    btn.parentElement.remove();
-  }
-}
-
-// ---------- LOGOUT ----------
 function logout() {
   const token = localStorage.getItem('torrenthub_token');
   if (token) {
@@ -500,9 +116,8 @@ function logout() {
   window.location.href = 'index.html';
 }
 
-// ---------- LOAD ON PAGE LOAD ----------
+// Load on page load
 loadAccount();
 </script>
-
 </body>
 </html>
