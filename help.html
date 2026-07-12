@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Help - TorrentHub</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #e8e4e0; color: #333; transition: all 0.3s ease; }
+
+        /* DARK MODE */
+        body.dark-mode { background: #0a0a0f !important; color: #f0f0f0 !important; }
+        body.dark-mode .header { background: #1a1a2e; }
+        body.dark-mode .nav { background: #11111f; }
+        body.dark-mode .nav a { color: #aaa; }
+        body.dark-mode .nav a:hover { color: #ff6b00; }
+        body.dark-mode .content-box { background: #1a1a2e; color: #f0f0f0; }
+        body.dark-mode .content-box h2 { color: #f0f0f0; border-bottom-color: #ff6b00; }
+        body.dark-mode .content-box h3 { color: #ff6b00; }
+        body.dark-mode .footer { background: #11111f; color: #888; }
+        body.dark-mode .footer a { color: #ff6b00; }
+        body.dark-mode .dropdown-content { background: #1a1a2e; color: #f0f0f0; }
+        body.dark-mode .dropdown-content a { color: #f0f0f0; }
+        body.dark-mode .dropdown-content a:hover { background: #2a2a4e; }
+        body.dark-mode .user-info { border-bottom-color: #333; color: #f0f0f0; }
+        body.dark-mode .user-dropdown-btn { background: #1a1a2e; color: #ff6b00; }
+        body.dark-mode .user-dropdown-btn:hover { background: #2a2a4e; }
+        body.dark-mode .faq-item { border-bottom-color: #333; }
+        body.dark-mode .faq-item .question { color: #f0f0f0; }
+        body.dark-mode .faq-item .answer { color: #ccc; }
+
+        .header { background: #ff6b00; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; }
+        .header h1 { color: #fff; font-size: 24px; }
+        .header h1 a { color: #fff; text-decoration: none; }
+        .nav { background: #2c2c2c; padding: 10px 20px; }
+        .nav a { color: #ccc; text-decoration: none; margin-right: 20px; font-size: 14px; }
+        .nav a:hover { color: #ff6b00; }
+        .container { max-width: 900px; margin: 30px auto; padding: 0 20px; }
+        .content-box { background: #fff; padding: 40px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .content-box h2 { color: #333; border-bottom: 2px solid #ff6b00; padding-bottom: 15px; margin-bottom: 25px; }
+        .content-box h3 { color: #ff6b00; margin: 30px 0 15px 0; }
+        .content-box p { margin-bottom: 15px; line-height: 1.7; }
+        .faq-item { padding: 15px 0; border-bottom: 1px solid #eee; }
+        .faq-item:last-child { border-bottom: none; }
+        .faq-item .question { font-weight: 600; font-size: 16px; color: #333; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+        .faq-item .question:hover { color: #ff6b00; }
+        .faq-item .question .arrow { transition: transform 0.3s; }
+        .faq-item .question .arrow.open { transform: rotate(180deg); }
+        .faq-item .answer { display: none; margin-top: 10px; color: #555; line-height: 1.6; padding-left: 10px; border-left: 3px solid #ff6b00; }
+        .faq-item .answer.show { display: block; }
+        .footer { background: #2c2c2c; color: #999; text-align: center; padding: 20px; margin-top: 40px; font-size: 13px; }
+        .footer a { color: #ff6b00; text-decoration: none; }
+        .footer a:hover { text-decoration: underline; }
+
+        .user-panel { display: flex; gap: 10px; align-items: center; position: relative; }
+        .user-panel a { background: #fff; color: #ff6b00; padding: 8px 16px; border-radius: 4px; text-decoration: none; font-weight: 600; font-size: 14px; }
+        .user-panel a:hover { background: #f0f0f0; }
+        .user-dropdown { position: relative; display: inline-block; }
+        .user-dropdown-btn { background: #fff; color: #ff6b00; padding: 8px 16px; border-radius: 4px; border: none; font-weight: 600; font-size: 14px; cursor: pointer; }
+        .user-dropdown-btn:hover { background: #f0f0f0; }
+        .user-dropdown-content { display: none; position: absolute; right: 0; background: #fff; min-width: 220px; box-shadow: 0 8px 16px rgba(0,0,0,0.2); border-radius: 8px; z-index: 100; padding: 10px 0; }
+        .user-dropdown-content a, .user-dropdown-content button { display: block; padding: 10px 20px; color: #333; text-decoration: none; background: none; border: none; width: 100%; text-align: left; cursor: pointer; font-size: 14px; }
+        .user-dropdown-content a:hover, .user-dropdown-content button:hover { background: #f5f5f5; }
+        .user-dropdown:hover .user-dropdown-content { display: block; }
+        .user-info { padding: 10px 20px; border-bottom: 1px solid #eee; font-weight: 600; color: #333; }
+        .back-link { display: inline-block; margin-top: 20px; color: #ff6b00; text-decoration: none; }
+        .back-link:hover { text-decoration: underline; }
+
+        @media (max-width: 600px) {
+            .content-box { padding: 20px; }
+            .nav a { font-size: 12px; margin-right: 10px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header" id="mainHeader">
+        <h1><a href="index.html">🔥 TorrentHub</a></h1>
+        <div class="user-panel" id="userPanel">
+            <a href="login.html">Log In</a>
+            <a href="login.html">Register</a>
+        </div>
+    </div>
+
+    <div class="nav">
+        <a href="index.html">Home</a>
+        <a href="forum.html">Forum</a>
+        <a href="upload.html">📤 Upload</a>
+        <a href="top100.html">🏆 Top 100</a>
+        <a href="users.html">👥 Users</a>
+        <a href="search.html">🔍 Search</a>
+        <a href="terms.html">Terms</a>
+        <a href="piracy.html">Piracy</a>
+        <a href="help.html" style="color:#ff6b00;">Help</a>
+        <a href="admin/" style="color:#ff4444;">🛡️ Admin</a>
+    </div>
+
+    <div class="container">
+        <div class="content-box">
+            <h2>❓ Help Center</h2>
+            <p style="margin-bottom: 25px; color: #888;">Find answers to common questions about using TorrentHub.</p>
+
+            <div class="faq-item">
+                <div class="question" onclick="toggleFAQ(this)">
+                    <span>❓ What is TorrentHub?</span>
+                    <span class="arrow">▼</span>
+                </div>
+                <div class="answer show">TorrentHub is a <strong>torrent index and community forum</strong>. We do <strong>not</strong> host any copyrighted files. We only index torrent metadata (file names, sizes, magnet links) that are publicly available. Think of us as a search engine for torrents.</div>
+            </div>
+
+            <div class="faq-item">
+                <div class="question" onclick="toggleFAQ(this)">
+                    <span>📤 How do I upload a torrent?</span>
+                    <span class="arrow">▼</span>
+                </div>
+                <div class="answer">Go to the <a href="upload.html">Upload page</a>. You can either upload a file directly (under 10MB) or paste a magnet link. Fill in the title, category, and description, then click <strong>Upload</strong>. You must be logged in to upload.</div>
+            </div>
+
+            <div class="faq-item">
+                <div class="question" onclick="toggleFAQ(this)">
+                    <span>⬇️ How do I download a torrent?</span>
+                    <span class="arrow">▼</span>
+                </div>
+                <div class="answer">On any torrent page, click the big green <strong>⬇️ DOWNLOAD</strong> button. This will either redirect you to a magnet link or download a .torrent file. You'll need a torrent client (like qBittorrent, uTorrent, or Transmission) to actually download the content.</div>
+            </div>
+
+            <div class="faq-item">
+                <div class="question" onclick="toggleFAQ(this)">
+                    <span>👤 How do I create an account?</span>
+                    <span class="arrow">▼</span>
+                </div>
+                <div class="answer">Click <strong>Log In</strong> in the top-right corner, then click <strong>Register</strong>. Fill in your username, nickname, email, and password. You can also sign up with <strong>Google</strong> or <strong>GitHub</strong> OAuth.</div>
+            </div>
+
+            <div class="faq-item">
+                <div class="question" onclick="toggleFAQ(this)">
+                    <span>📚 What is the Forum?</span>
+                    <span class="arrow">▼</span>
+                </div>
+                <div class="answer">The <a href="forum.html">Forum</a> is a place to discuss topics related to torrents, software, movies, games, and more. You can create topics, post messages, and reply to others. It's like a mini‑Reddit within TorrentHub.</div>
+            </div>
+
+            <div class="faq-item">
+                <div class="question" onclick="toggleFAQ(this)">
+                    <span>🏆 What is the Top 100 page?</span>
+                    <span class="arrow">▼</span>
+                </div>
+                <div class="answer">The <a href="top100.html">Top 100</a> page ranks users by reputation. You earn reputation when others like your torrents, forum posts, or comments. The higher your reputation, the higher you rank.</div>
+            </div>
+
+            <div class="faq-item">
+                <div class="question" onclick="toggleFAQ(this)">
+                    <span>🔔 How do notifications work?</span>
+                    <span class="arrow">▼</span>
+                </div>
+                <div class="answer">You'll receive notifications when someone votes on your content, comments on your posts, sends you a message, or follows you. Check the <strong>🔔 bell icon</strong> in the header for real‑time alerts, or visit the <a href="notifications.html">Notifications page</a>.</div>
+            </div>
+
+            <div class="faq-item">
+                <div class="question" onclick="toggleFAQ(this)">
+                    <span>💬 How do I send a private message?</span>
+                    <span class="arrow">▼</span>
+                </div>
+                <div class="answer">Go to someone's profile and click the <strong>💬 Message</strong> button. You can also go to the <a href="messages.html">Messages page</a> and start a new conversation with any user ID. You can even attach files (images, PDFs, etc.) to your messages.</div>
+            </div>
+
+            <div class="faq-item">
+                <div class="question" onclick="toggleFAQ(this)">
+                    <span>🛡️ What is the Admin Panel?</span>
+                    <span class="arrow">▼</span>
+                </div>
+                <div class="answer">The Admin Panel is only visible to administrators and moderators. It allows you to manage users (ban/unban), approve reported torrents, and view site statistics. If you're not an admin, you won't see this option.</div>
+            </div>
+
+            <div class="faq-item">
+                <div class="question" onclick="toggleFAQ(this)">
+                    <span>🎨 How do I customize my profile?</span>
+                    <span class="arrow">▼</span>
+                </div>
+                <div class="answer">Go to your <a href="account.html">Account</a> → <strong>Edit Profile</strong>. You can upload an avatar, a cover image, add a bio, location, and social links. You can also toggle <strong>Do Not Disturb</strong> and <strong>Allow Messages</strong> from there.</div>
+            </div>
+
+            <div class="faq-item">
+                <div class="question" onclick="toggleFAQ(this)">
+                    <span>🌙 How do I enable Dark Mode?</span>
+                    <span class="arrow">▼</span>
+                </div>
+                <div class="answer">Go to <a href="settings.html">Settings</a> and toggle the <strong>Enable Dark Mode</strong> switch. Your preference is saved and applied across all pages.</div>
+            </div>
+
+            <div class="faq-item">
+                <div class="question" onclick="toggleFAQ(this)">
+                    <span>📄 Are there Terms of Service?</span>
+                    <span class="arrow">▼</span>
+                </div>
+                <div class="answer">Yes! You can read our <a href="terms.html">Terms of Service</a> and <a href="piracy.html">Piracy / DMCA Policy</a> at any time. We take copyright seriously and comply with the DMCA.</div>
+            </div>
+
+            <a href="index.html" class="back-link">← Back to Home</a>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p><strong>TorrentHub</strong> — Free & Open Source Torrent Index</p>
+        <p>This site does not host files. We only index torrent metadata.</p>
+        <p>No ads. No trackers. Just community.</p>
+        <p style="margin-top:10px;">© 2026 TorrentHub | <a href="terms.html">Terms</a> | <a href="piracy.html">Piracy</a> | <a href="help.html">Help</a></p>
+    </div>
+
+    <script>
+        const API_URL = 'https://torrenthub-api.serafimkoragin-b12.workers.dev';
+
+        function toggleFAQ(el) {
+            const answer = el.parentElement.querySelector('.answer');
+            const arrow = el.querySelector('.arrow');
+            answer.classList.toggle('show');
+            arrow.classList.toggle('open');
+        }
+
+        function applySettings(settings) {
+            if (settings.theme_color) {
+                const header = document.getElementById('mainHeader');
+                if (header) header.style.background = settings.theme_color;
+            }
+            if (settings.bg_enabled && settings.bg_image) {
+                document.body.style.backgroundImage = `url(${settings.bg_image})`;
+                document.body.style.backgroundSize = 'cover';
+                document.body.style.backgroundAttachment = 'fixed';
+            } else {
+                document.body.style.backgroundImage = 'none';
+            }
+            document.body.style.transition = settings.animations ? 'all 0.3s ease' : 'none';
+            const darkMode = localStorage.getItem('torrenthub_darkmode') === 'true';
+            if (darkMode) {
+                document.body.classList.add('dark-mode');
+            } else {
+                document.body.classList.remove('dark-mode');
+            }
+        }
+
+        async function loadSettingsAndApply() {
+            const token = localStorage.getItem('torrenthub_token');
+            if (!token) return;
+            try {
+                const res = await fetch(`${API_URL}/api/auth/settings`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+                if (data.success) {
+                    applySettings(data.settings);
+                }
+            } catch (e) {
+                const darkMode = localStorage.getItem('torrenthub_darkmode') === 'true';
+                if (darkMode) document.body.classList.add('dark-mode');
+            }
+        }
+
+        async function checkLogin() {
+            const token = localStorage.getItem('torrenthub_token');
+            const panel = document.getElementById('userPanel');
+            if (!token) {
+                panel.innerHTML = `<a href="login.html">Log In</a><a href="login.html">Register</a>`;
+                return;
+            }
+            try {
+                const res = await fetch(`${API_URL}/api/auth/me`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+                if (!data.success) {
+                    localStorage.removeItem('torrenthub_token');
+                    panel.innerHTML = `<a href="login.html">Log In</a><a href="login.html">Register</a>`;
+                    return;
+                }
+                const isAdmin = data.user.role === 'admin' || data.user.role === 'moderator';
+                panel.innerHTML = `
+                    <div class="user-dropdown">
+                        <button class="user-dropdown-btn">👤 ${data.user.nickname}</button>
+                        <div class="user-dropdown-content">
+                            <div class="user-info">⭐ ${data.user.reputation || 0} pts</div>
+                            <a href="account.html">👤 My Account</a>
+                            <a href="profile.html?id=${data.user.id}">📋 My Profile</a>
+                            <a href="edit-profile.html">✏️ Edit Profile</a>
+                            <a href="upload.html">📤 Upload</a>
+                            <a href="forum.html">📚 Forum</a>
+                            <a href="top100.html">🏆 Top 100</a>
+                            <a href="users.html">👥 Users</a>
+                            <a href="search.html">🔍 Search</a>
+                            <a href="notifications.html">🔔 Notifications</a>
+                            <a href="messages.html">💬 Messages</a>
+                            <a href="badges.html">🏅 Badges</a>
+                            <a href="settings.html">⚙️ Settings</a>
+                            ${isAdmin ? `<a href="admin/" style="color:#ff4444;">🛡️ Admin Panel</a>` : ''}
+                            <a href="#" onclick="logout()">🚪 Log Out</a>
+                        </div>
+                    </div>
+                `;
+            } catch (e) {
+                panel.innerHTML = `<a href="login.html">Log In</a><a href="login.html">Register</a>`;
+            }
+        }
+
+        function logout() {
+            const token = localStorage.getItem('torrenthub_token');
+            if (token) {
+                fetch(`${API_URL}/api/auth/logout`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                }).catch(() => {});
+            }
+            localStorage.removeItem('torrenthub_token');
+            localStorage.removeItem('torrenthub_user');
+            window.location.href = 'index.html';
+        }
+
+        loadSettingsAndApply();
+        checkLogin();
+    </script>
+</body>
+</html>
