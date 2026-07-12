@@ -34,47 +34,12 @@
             box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
             margin: 10px 0;
         }
-        .download-btn:hover {
-            background: #218838;
-            transform: scale(1.02);
-        }
-        .download-btn:active {
-            transform: scale(0.98);
-        }
-        .download-btn .sub {
-            display: block;
-            font-size: 12px;
-            font-weight: 400;
-            opacity: 0.8;
-        }
-        .no-ads-badge {
-            display: inline-block;
-            background: #28a745;
-            color: #fff;
-            padding: 2px 12px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: 600;
-            margin-left: 10px;
-            vertical-align: middle;
-        }
-        .file-download-btn {
-            display: inline-block;
-            padding: 12px 30px;
-            background: #007bff;
-            color: #fff;
-            border: none;
-            border-radius: 6px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            text-decoration: none;
-            transition: background 0.2s;
-            margin: 10px 10px 10px 0;
-        }
-        .file-download-btn:hover {
-            background: #0069d9;
-        }
+        .download-btn:hover { background: #218838; transform: scale(1.02); }
+        .download-btn:active { transform: scale(0.98); }
+        .download-btn .sub { display: block; font-size: 12px; font-weight: 400; opacity: 0.8; }
+        .no-ads-badge { display: inline-block; background: #28a745; color: #fff; padding: 2px 12px; border-radius: 12px; font-size: 12px; font-weight: 600; margin-left: 10px; vertical-align: middle; }
+        .file-download-btn { display: inline-block; padding: 12px 30px; background: #007bff; color: #fff; border: none; border-radius: 6px; font-size: 16px; font-weight: 600; cursor: pointer; text-decoration: none; transition: background 0.2s; margin: 10px 10px 10px 0; }
+        .file-download-btn:hover { background: #0069d9; }
         .back-link { display: inline-block; margin-top: 20px; color: #ff6b00; text-decoration: none; }
         .back-link:hover { text-decoration: underline; }
         .error-box { background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; padding: 20px; border-radius: 4px; margin: 20px 0; }
@@ -87,17 +52,50 @@
         .comment .author { font-weight: 600; color: #333; }
         .comment .date { color: #999; font-size: 12px; margin-left: 10px; }
         .comment .content { margin-top: 5px; color: #555; word-break: break-word; }
+        .comment .actions { margin-top: 8px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+        .comment .actions button { background: none; border: none; cursor: pointer; font-size: 13px; color: #666; padding: 2px 8px; border-radius: 4px; }
+        .comment .actions button:hover { background: #f0f0f0; }
+        .comment .actions .edit-btn { color: #007bff; }
+        .comment .actions .delete-btn { color: #dc3545; }
+        .comment .actions .like-btn { color: #28a745; }
+        .comment .actions .dislike-btn { color: #dc3545; }
+        .comment .actions .vote-count { font-weight: 600; }
         .comment-form { margin-top: 20px; }
         .comment-form textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; min-height: 80px; font-family: inherit; }
         .comment-form textarea:focus { border-color: #ff6b00; outline: none; }
         .btn { padding: 10px 24px; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; }
         .btn-orange { background: #ff6b00; color: #fff; }
         .btn-orange:hover { background: #e55f00; }
+        .btn-gray { background: #6c757d; color: #fff; }
+        .btn-gray:hover { background: #5a6268; }
+        .btn-danger { background: #dc3545; color: #fff; }
+        .btn-danger:hover { background: #c82333; }
+        .btn-sm { padding: 4px 12px; font-size: 12px; }
+
+        /* Vote buttons for torrent */
+        .vote-section { display: flex; align-items: center; gap: 15px; margin: 15px 0; }
+        .vote-section button { background: none; border: none; font-size: 24px; cursor: pointer; padding: 5px 10px; border-radius: 4px; transition: 0.2s; }
+        .vote-section button:hover { background: #f0f0f0; }
+        .vote-section .like-btn { color: #28a745; }
+        .vote-section .like-btn.active { background: #d4edda; }
+        .vote-section .dislike-btn { color: #dc3545; }
+        .vote-section .dislike-btn.active { background: #f8d7da; }
+        .vote-section .vote-score { font-size: 20px; font-weight: 700; min-width: 30px; text-align: center; }
+        .vote-section .vote-stats { font-size: 14px; color: #666; }
+
+        /* Edit torrent */
+        .edit-torrent-form { background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0; display: none; }
+        .edit-torrent-form.show { display: block; }
+        .edit-torrent-form input, .edit-torrent-form textarea, .edit-torrent-form select {
+            width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 10px; font-family: inherit;
+        }
+        .edit-torrent-form .btn-group { display: flex; gap: 10px; }
 
         @media (max-width: 600px) {
             .torrent-detail { padding: 20px; }
             .download-btn { font-size: 16px; padding: 12px 20px; width: 100%; text-align: center; }
             .torrent-detail .meta { gap: 10px; font-size: 12px; }
+            .vote-section { flex-wrap: wrap; }
         }
     </style>
 </head>
@@ -120,8 +118,11 @@
 
     <script>
         const API_URL = 'https://torrenthub-api.serafimkoragin-b12.workers.dev';
+        let currentUser = null;
+        let torrentId = null;
+        let torrentData = null;
 
-        // ---------- Get torrent ID from URL ----------
+        // ---------- Get torrent ID ----------
         function getTorrentId() {
             const params = new URLSearchParams(window.location.search);
             return params.get('id');
@@ -130,11 +131,23 @@
         // ---------- Load Torrent ----------
         async function loadTorrent() {
             const container = document.getElementById('mainContainer');
-            const torrentId = getTorrentId();
+            torrentId = getTorrentId();
 
             if (!torrentId) {
                 container.innerHTML = `<div class="error-box">❌ No torrent ID specified.</div>`;
                 return;
+            }
+
+            // Get current user
+            const token = localStorage.getItem('torrenthub_token');
+            if (token) {
+                try {
+                    const res = await fetch(`${API_URL}/api/auth/me`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    const data = await res.json();
+                    if (data.success) currentUser = data.user;
+                } catch (e) {}
             }
 
             try {
@@ -144,94 +157,270 @@
 
                 if (!data.success) throw new Error(data.error || 'Failed to load');
 
-                const t = data.torrent;
-                const fileSize = formatFileSize(t.file_size || 0);
-                const seeders = t.seeders || 0;
-                const leechers = t.leechers || 0;
-                const hasFile = t.file_data && t.file_data.length > 0;
-
-                let commentsHtml = '';
-                if (t.comments && t.comments.length > 0) {
-                    t.comments.forEach(c => {
-                        commentsHtml += `
-                                <div class="comment">
-                                    <div class="author">${c.nickname || c.username}</div>
-                                    <div class="content">${c.content}</div>
-                                </div>
-                            `;
-                    });
-                } else {
-                    commentsHtml = '<p style="color:#999;">No comments yet. Be the first!</p>';
-                }
-
-                const isLoggedIn = !!localStorage.getItem('torrenthub_token');
-
-                // Build download buttons
-                let downloadButtons = '';
-                if (hasFile) {
-                    downloadButtons += `
-                            <a href="/api/torrents/${t.id}/file" class="file-download-btn" target="_blank">
-                                📁 Download File (${fileSize})
-                            </a>
-                        `;
-                }
-                if (t.magnet_link || t.info_hash) {
-                    downloadButtons += `
-                            <a href="/api/torrents/${t.id}/download" class="download-btn" target="_blank">
-                                ⬇️ DOWNLOAD WITH MAGNET
-                                <span class="sub">🔒 Only from this button — no ads, no trackers</span>
-                            </a>
-                        `;
-                }
-                if (!downloadButtons) {
-                    downloadButtons = '<p style="color:#999;">No download available for this torrent.</p>';
-                }
-
-                container.innerHTML = `
-                        <div class="torrent-detail">
-                            <h2>${t.title}</h2>
-                            <div class="meta">
-                                <span>📂 ${t.category || 'General'}</span>
-                                <span>📦 ${fileSize}</span>
-                                <span class="seeders" style="color:#28a745;">🟢 ${seeders} seeders</span>
-                                <span class="leechers" style="color:#dc3545;">🔴 ${leechers} leechers</span>
-                                <span>👤 ${t.nickname || t.username}</span>
-                                <span>📅 ${new Date(t.created_at).toLocaleDateString()}</span>
-                                <span>⬇️ ${t.download_count || 0} downloads</span>
-                            </div>
-
-                            <div style="margin: 15px 0;">
-                                ${downloadButtons}
-                                <span class="no-ads-badge">✅ NO ADS</span>
-                            </div>
-
-                            <div class="description">
-                                <strong>📝 Description</strong><br>
-                                ${t.description || 'No description provided.'}
-                            </div>
-
-                            <div class="comments-section">
-                                <h3>💬 Comments</h3>
-                                <div id="commentsList">${commentsHtml}</div>
-                                ${isLoggedIn ? `
-                                        <div class="comment-form">
-                                            <textarea id="commentContent" placeholder="Write a comment..."></textarea>
-                                            <button class="btn btn-orange" onclick="addComment()">Post Comment</button>
-                                        </div>
-                                    ` : `
-                                        <p style="color:#999;margin-top:15px;">
-                                            <a href="login.html">Log in</a> to comment.
-                                        </p>
-                                    `}
-                            </div>
-
-                            <a href="index.html" class="back-link">← Back to torrents</a>
-                        </div>
-                    `;
+                torrentData = data.torrent;
+                renderTorrent(torrentData);
 
             } catch (err) {
                 container.innerHTML = `<div class="error-box">❌ ${err.message}</div>`;
                 console.error('Load torrent error:', err);
+            }
+        }
+
+        // ---------- Render Torrent ----------
+        function renderTorrent(t) {
+            const container = document.getElementById('mainContainer');
+            const fileSize = formatFileSize(t.file_size || 0);
+            const isOwner = currentUser && currentUser.id === t.uploader_id;
+            const canEdit = isOwner || (currentUser && currentUser.role === 'admin');
+
+            // Vote counts
+            const likes = t.likes || 0;
+            const dislikes = t.dislikes || 0;
+            const voteScore = t.vote_score || 0;
+
+            let commentsHtml = '';
+            if (t.comments && t.comments.length > 0) {
+                t.comments.forEach(c => {
+                    const isCommentOwner = currentUser && currentUser.id === c.user_id;
+                    const canEditComment = isCommentOwner || (currentUser && currentUser.role === 'admin');
+                    const commentVoteScore = c.vote_score || 0;
+                    const commentLikes = c.likes || 0;
+                    const commentDislikes = c.dislikes || 0;
+
+                    commentsHtml += `
+                        <div class="comment" id="comment-${c.id}">
+                            <div class="author">${c.nickname || c.username}</div>
+                            <div class="content">${c.content}</div>
+                            <div class="actions">
+                                <button class="like-btn" onclick="voteComment(${c.id}, 1)">👍 ${commentLikes}</button>
+                                <button class="dislike-btn" onclick="voteComment(${c.id}, -1)">👎 ${commentDislikes}</button>
+                                <span class="vote-count">${commentVoteScore > 0 ? '+' : ''}${commentVoteScore}</span>
+                                ${canEditComment ? `
+                                    <button class="edit-btn" onclick="editComment(${c.id})">✏️ Edit</button>
+                                    <button class="delete-btn" onclick="deleteComment(${c.id})">🗑️ Delete</button>
+                                ` : ''}
+                            </div>
+                        </div>
+                    `;
+                });
+            } else {
+                commentsHtml = '<p style="color:#999;">No comments yet. Be the first!</p>';
+            }
+
+            const isLoggedIn = !!localStorage.getItem('torrenthub_token');
+
+            // Download buttons
+            let downloadButtons = '';
+            if (t.file_data && t.file_data.length > 0) {
+                downloadButtons += `
+                    <a href="/api/torrents/${t.id}/file" class="file-download-btn" target="_blank">
+                        📁 Download File (${fileSize})
+                    </a>
+                `;
+            }
+            if (t.magnet_link || t.info_hash) {
+                downloadButtons += `
+                    <a href="/api/torrents/${t.id}/download" class="download-btn" target="_blank">
+                        ⬇️ DOWNLOAD WITH MAGNET
+                        <span class="sub">🔒 Only from this button — no ads, no trackers</span>
+                    </a>
+                `;
+            }
+            if (!downloadButtons) {
+                downloadButtons = '<p style="color:#999;">No download available for this torrent.</p>';
+            }
+
+            container.innerHTML = `
+                <div class="torrent-detail">
+                    <h2>${t.title}</h2>
+
+                    <div class="meta">
+                        <span>📂 ${t.category || 'General'}</span>
+                        <span>📦 ${fileSize}</span>
+                        <span class="seeders" style="color:#28a745;">🟢 ${t.seeders || 0} seeders</span>
+                        <span class="leechers" style="color:#dc3545;">🔴 ${t.leechers || 0} leechers</span>
+                        <span>👤 ${t.nickname || t.username}</span>
+                        <span>📅 ${new Date(t.created_at).toLocaleDateString()}</span>
+                        <span>⬇️ ${t.download_count || 0} downloads</span>
+                    </div>
+
+                    <div class="vote-section">
+                        <button class="like-btn" onclick="voteTorrent(1)">👍</button>
+                        <span class="vote-score" id="voteScore">${voteScore > 0 ? '+' : ''}${voteScore}</span>
+                        <button class="dislike-btn" onclick="voteTorrent(-1)">👎</button>
+                        <span class="vote-stats">${likes} likes · ${dislikes} dislikes</span>
+                    </div>
+
+                    ${canEdit ? `
+                        <div style="margin: 10px 0;">
+                            <button class="btn btn-orange btn-sm" onclick="toggleEditTorrent()">✏️ Edit Torrent</button>
+                            <button class="btn btn-danger btn-sm" onclick="deleteTorrent()">🗑️ Delete Torrent</button>
+                        </div>
+                        <div class="edit-torrent-form" id="editTorrentForm">
+                            <input type="text" id="editTitle" value="${t.title}" placeholder="Title" />
+                            <select id="editCategory">
+                                <option value="Software" ${t.category === 'Software' ? 'selected' : ''}>Software</option>
+                                <option value="Movies" ${t.category === 'Movies' ? 'selected' : ''}>Movies</option>
+                                <option value="TV Shows" ${t.category === 'TV Shows' ? 'selected' : ''}>TV Shows</option>
+                                <option value="Games" ${t.category === 'Games' ? 'selected' : ''}>Games</option>
+                                <option value="Music" ${t.category === 'Music' ? 'selected' : ''}>Music</option>
+                                <option value="Books" ${t.category === 'Books' ? 'selected' : ''}>Books</option>
+                                <option value="Education" ${t.category === 'Education' ? 'selected' : ''}>Education</option>
+                                <option value="Other" ${t.category === 'Other' ? 'selected' : ''}>Other</option>
+                            </select>
+                            <textarea id="editDescription" rows="4">${t.description || ''}</textarea>
+                            <div class="btn-group">
+                                <button class="btn btn-orange" onclick="saveTorrentEdit()">Save Changes</button>
+                                <button class="btn btn-gray" onclick="toggleEditTorrent()">Cancel</button>
+                            </div>
+                        </div>
+                    ` : ''}
+
+                    <div style="margin: 15px 0;">
+                        ${downloadButtons}
+                        <span class="no-ads-badge">✅ NO ADS</span>
+                    </div>
+
+                    <div class="description">
+                        <strong>📝 Description</strong><br>
+                        ${t.description || 'No description provided.'}
+                    </div>
+
+                    <div class="comments-section">
+                        <h3>💬 Comments</h3>
+                        <div id="commentsList">${commentsHtml}</div>
+                        ${isLoggedIn ? `
+                            <div class="comment-form">
+                                <textarea id="commentContent" placeholder="Write a comment..."></textarea>
+                                <button class="btn btn-orange" onclick="addComment()">Post Comment</button>
+                            </div>
+                        ` : `
+                            <p style="color:#999;margin-top:15px;">
+                                <a href="login.html">Log in</a> to comment.
+                            </p>
+                        `}
+                    </div>
+
+                    <a href="index.html" class="back-link">← Back to torrents</a>
+                </div>
+            `;
+        }
+
+        // ---------- Vote Torrent ----------
+        async function voteTorrent(vote) {
+            if (!currentUser) {
+                alert('Please log in to vote.');
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_URL}/api/torrents/${torrentId}/vote`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('torrenthub_token')}`
+                    },
+                    body: JSON.stringify({ vote })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    loadTorrent(); // Reload to show updated votes
+                } else {
+                    alert('Vote failed: ' + data.error);
+                }
+            } catch (err) {
+                alert('Network error: ' + err.message);
+            }
+        }
+
+        // ---------- Vote Comment ----------
+        async function voteComment(commentId, vote) {
+            if (!currentUser) {
+                alert('Please log in to vote.');
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_URL}/api/torrents/comment/${commentId}/vote`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('torrenthub_token')}`
+                    },
+                    body: JSON.stringify({ vote })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    loadTorrent(); // Reload to show updated votes
+                } else {
+                    alert('Vote failed: ' + data.error);
+                }
+            } catch (err) {
+                alert('Network error: ' + err.message);
+            }
+        }
+
+        // ---------- Toggle Edit Torrent ----------
+        function toggleEditTorrent() {
+            const form = document.getElementById('editTorrentForm');
+            if (form) {
+                form.classList.toggle('show');
+            }
+        }
+
+        // ---------- Save Torrent Edit ----------
+        async function saveTorrentEdit() {
+            const title = document.getElementById('editTitle').value.trim();
+            const category = document.getElementById('editCategory').value;
+            const description = document.getElementById('editDescription').value.trim();
+
+            if (!title || !category || !description) {
+                alert('Title, category, and description are required.');
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_URL}/api/torrents/${torrentId}/edit`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('torrenthub_token')}`
+                    },
+                    body: JSON.stringify({ title, category, description })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    alert('✅ Torrent updated!');
+                    toggleEditTorrent();
+                    loadTorrent();
+                } else {
+                    alert('Edit failed: ' + data.error);
+                }
+            } catch (err) {
+                alert('Network error: ' + err.message);
+            }
+        }
+
+        // ---------- Delete Torrent ----------
+        async function deleteTorrent() {
+            if (!confirm('⚠️ Are you sure you want to delete this torrent? This cannot be undone!')) return;
+
+            try {
+                const res = await fetch(`${API_URL}/api/torrents/${torrentId}/delete`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('torrenthub_token')}`
+                    }
+                });
+                const data = await res.json();
+                if (data.success) {
+                    alert('✅ Torrent deleted!');
+                    window.location.href = 'index.html';
+                } else {
+                    alert('Delete failed: ' + data.error);
+                }
+            } catch (err) {
+                alert('Network error: ' + err.message);
             }
         }
 
@@ -242,9 +431,6 @@
 
             const token = localStorage.getItem('torrenthub_token');
             if (!token) { window.location.href = 'login.html'; return; }
-
-            const torrentId = getTorrentId();
-            if (!torrentId) return;
 
             try {
                 const res = await fetch(`${API_URL}/api/torrents/comment`, {
@@ -268,6 +454,77 @@
             }
         }
 
+        // ---------- Edit Comment ----------
+        function editComment(commentId) {
+            const commentEl = document.getElementById(`comment-${commentId}`);
+            if (!commentEl) return;
+
+            const contentEl = commentEl.querySelector('.content');
+            const actionsEl = commentEl.querySelector('.actions');
+            const currentContent = contentEl.textContent;
+
+            contentEl.innerHTML = `
+                <textarea style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;font-family:inherit;">${currentContent}</textarea>
+                <div style="margin-top:8px;">
+                    <button class="btn btn-orange btn-sm" onclick="saveCommentEdit(${commentId})">Save</button>
+                    <button class="btn btn-gray btn-sm" onclick="loadTorrent()">Cancel</button>
+                </div>
+            `;
+            actionsEl.style.display = 'none';
+        }
+
+        async function saveCommentEdit(commentId) {
+            const commentEl = document.getElementById(`comment-${commentId}`);
+            if (!commentEl) return;
+
+            const textarea = commentEl.querySelector('textarea');
+            const content = textarea.value.trim();
+
+            if (!content) { alert('Content is required.'); return; }
+
+            try {
+                const res = await fetch(`${API_URL}/api/torrents/comment/${commentId}/edit`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('torrenthub_token')}`
+                    },
+                    body: JSON.stringify({ content })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    loadTorrent();
+                } else {
+                    alert('Edit failed: ' + data.error);
+                }
+            } catch (err) {
+                alert('Network error: ' + err.message);
+            }
+        }
+
+        // ---------- Delete Comment ----------
+        async function deleteComment(commentId) {
+            if (!confirm('Delete this comment?')) return;
+
+            try {
+                const res = await fetch(`${API_URL}/api/torrents/comment/${commentId}/delete`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('torrenthub_token')}`
+                    }
+                });
+                const data = await res.json();
+                if (data.success) {
+                    loadTorrent();
+                } else {
+                    alert('Delete failed: ' + data.error);
+                }
+            } catch (err) {
+                alert('Network error: ' + err.message);
+            }
+        }
+
+        // ---------- Format File Size ----------
         function formatFileSize(bytes) {
             if (!bytes || bytes === 0) return 'Unknown';
             const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
@@ -275,7 +532,7 @@
             return (bytes / Math.pow(1024, i)).toFixed(1) + ' ' + sizes[i];
         }
 
-        // ---------- Load on page load ----------
+        // ---------- Load ----------
         loadTorrent();
     </script>
 </body>
