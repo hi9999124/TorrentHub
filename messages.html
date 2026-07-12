@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Messages - TorrentHub</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        /* === Styles (your existing ones, plus new compose area) === */
+        * { margin:0; padding:0; box-sizing:border-box; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #e8e4e0; color: #333; transition: all 0.3s ease; }
         body.dark-mode { background: #0a0a0f !important; color: #f0f0f0 !important; }
         body.dark-mode .header { background: #1a1a2e; }
@@ -97,8 +98,13 @@
         .tab-bar button:hover { border-color: #ff6b00; }
         .tab-bar button.active { background: #ff6b00; color: #fff; border-color: #ff6b00; }
 
-        .new-message-btn { margin-bottom: 15px; }
-        #fileInput { display: none; }
+        .new-message-area { background: #fff; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .new-message-area select, .new-message-area textarea { width: 100%; padding: 10px; margin-top: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; }
+        .new-message-area .row { display: flex; gap: 10px; margin-top: 8px; flex-wrap: wrap; }
+        .new-message-area .row button { margin-top: 0; }
+        .new-message-area .row input[type="file"] { flex: 1; }
+        .file-preview-compact { display: none; padding: 8px; background: #f0f0f0; border-radius: 4px; margin-top: 8px; align-items: center; gap: 10px; }
+        .file-preview-compact.show { display: flex; }
 
         @media (max-width: 600px) {
             .sidebar { flex: 1 1 100%; }
@@ -109,482 +115,537 @@
 </head>
 <body>
 
-    <div class="header" id="mainHeader">
-        <h1><a href="index.html">🔥 TorrentHub</a></h1>
-        <div class="user-panel" id="userPanel">
-            <a href="login.html">Log In</a>
-            <a href="login.html">Register</a>
+<div class="header" id="mainHeader">
+    <h1><a href="index.html">🔥 TorrentHub</a></h1>
+    <div class="user-panel" id="userPanel">
+        <a href="login.html">Log In</a>
+        <a href="login.html">Register</a>
+    </div>
+</div>
+
+<div class="nav">
+    <a href="index.html">Home</a>
+    <a href="forum.html">Forum</a>
+    <a href="upload.html">📤 Upload</a>
+    <a href="top100.html">🏆 Top 100</a>
+    <a href="users.html">👥 Users</a>
+    <a href="search.html">🔍 Search</a>
+    <a href="admin/" style="color:#ff4444;">🛡️ Admin</a>
+</div>
+
+<div class="container">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:10px;">
+        <h2>💬 Messages</h2>
+        <button class="btn" onclick="toggleNewMessage()">✏️ New Message</button>
+    </div>
+
+    <!-- New Message Compose Area -->
+    <div id="newMessageArea" class="new-message-area" style="display:none;">
+        <h3>Compose New Message</h3>
+        <select id="recipientSelect">
+            <option value="">-- Select a user --</option>
+        </select>
+        <textarea id="composeMessage" rows="3" placeholder="Type your message..."></textarea>
+        <div class="row">
+            <input type="file" id="imageInput" accept="image/*">
+            <button class="btn" onclick="sendNewMessage()">Send</button>
+            <button class="btn btn-secondary" onclick="hideNewMessage()">Cancel</button>
+        </div>
+        <div id="filePreviewCompact" class="file-preview-compact">
+            <span id="fileNameCompact">No file</span>
+            <button onclick="removePendingFile()" style="background:red;color:white;border:none;border-radius:4px;cursor:pointer;">✕</button>
         </div>
     </div>
 
-    <div class="nav">
-        <a href="index.html">Home</a>
-        <a href="forum.html">Forum</a>
-        <a href="upload.html">📤 Upload</a>
-        <a href="top100.html">🏆 Top 100</a>
-        <a href="users.html">👥 Users</a>
-        <a href="search.html">🔍 Search</a>
-        <a href="admin/" style="color:#ff4444;">🛡️ Admin</a>
+    <div class="tab-bar">
+        <button class="active" onclick="switchTab('inbox')">📥 Inbox</button>
+        <button onclick="switchTab('sent')">📤 Sent</button>
     </div>
 
-    <div class="container">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:10px;">
-            <h2>💬 Messages</h2>
-            <button class="btn" onclick="openNewMessage()">✏️ New Message</button>
+    <div class="messages-layout">
+        <div class="sidebar" id="conversationsList">
+            <div class="loading">Loading conversations...</div>
         </div>
-
-        <div class="tab-bar">
-            <button class="active" onclick="switchTab('inbox')">📥 Inbox</button>
-            <button onclick="switchTab('sent')">📤 Sent</button>
-        </div>
-
-        <div class="messages-layout">
-            <div class="sidebar" id="conversationsList">
-                <div class="loading">Loading conversations...</div>
-            </div>
-            <div class="main" id="messageView">
-                <div class="empty">Select a conversation to view messages.</div>
-            </div>
+        <div class="main" id="messageView">
+            <div class="empty">Select a conversation to view messages.</div>
         </div>
     </div>
+</div>
 
-    <script>
-        const API_URL = 'https://torrenthub-api.serafimkoragin-b12.workers.dev';
-        let currentTab = 'inbox';
-        let currentConversation = null;
-        let currentUser = null;
-        let pendingFile = null;
-        let isSending = false;
-        let lastMessageTime = 0;
+<script>
+    const API_URL = 'https://torrenthub-api.serafimkoragin-b12.workers.dev';
+    let currentTab = 'inbox';
+    let currentConversation = null;
+    let currentUser = null;
+    let pendingFile = null;
+    let isSending = false;
+    let lastMessageTime = 0;
 
-        // ---------- SETTINGS ----------
-        function applySettings(settings) {
-            if (settings.theme_color) {
-                document.getElementById('mainHeader').style.background = settings.theme_color;
-            }
-            if (settings.bg_enabled && settings.bg_image) {
-                document.body.style.backgroundImage = `url(${settings.bg_image})`;
-                document.body.style.backgroundSize = 'cover';
-                document.body.style.backgroundAttachment = 'fixed';
-            } else {
-                document.body.style.backgroundImage = 'none';
-                document.body.style.background = '#e8e4e0';
-            }
-            document.body.style.transition = settings.animations ? 'all 0.3s ease' : 'none';
-            const darkMode = localStorage.getItem('torrenthub_darkmode') === 'true';
-            if (darkMode) {
-                document.body.classList.add('dark-mode');
-            } else {
-                document.body.classList.remove('dark-mode');
-            }
+    // ===== Helper: compress image =====
+    function compressImage(file, maxWidth = 1200, quality = 0.8) {
+        return new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    let w = img.width, h = img.height;
+                    if (w > maxWidth) { h = (maxWidth / w) * h; w = maxWidth; }
+                    canvas.width = w; canvas.height = h;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, w, h);
+                    resolve(canvas.toDataURL('image/jpeg', quality));
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+
+    // ===== Auth =====
+    async function checkLogin() {
+        const token = localStorage.getItem('torrenthub_token');
+        const panel = document.getElementById('userPanel');
+        if (!token) {
+            panel.innerHTML = `<a href="login.html">Log In</a><a href="login.html">Register</a>`;
+            return;
         }
-
-        function applyLocalSettings() {
-            const themeColor = localStorage.getItem('torrenthub_theme') || '#ff6b00';
-            document.getElementById('mainHeader').style.background = themeColor;
-            const bg = localStorage.getItem('torrenthub_bg');
-            if (bg && bg !== 'none') {
-                document.body.style.backgroundImage = `url(${bg})`;
-                document.body.style.backgroundSize = 'cover';
-                document.body.style.backgroundAttachment = 'fixed';
-            } else {
-                document.body.style.backgroundImage = 'none';
-                document.body.style.background = '#e8e4e0';
-            }
-            const animations = localStorage.getItem('torrenthub_animations') !== 'false';
-            document.body.style.transition = animations ? 'all 0.3s ease' : 'none';
-            if (localStorage.getItem('torrenthub_darkmode') === 'true') {
-                document.body.classList.add('dark-mode');
-            } else {
-                document.body.classList.remove('dark-mode');
-            }
-        }
-
-        async function loadSettingsAndApply() {
-            const token = localStorage.getItem('torrenthub_token');
-            if (!token) return;
-            try {
-                const res = await fetch(`${API_URL}/api/auth/settings`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                const data = await res.json();
-                if (data.success) {
-                    applySettings(data.settings);
-                } else {
-                    applyLocalSettings();
-                }
-            } catch (e) {
-                applyLocalSettings();
-            }
-        }
-
-        // ---------- LOGIN CHECK ----------
-        async function checkLogin() {
-            const token = localStorage.getItem('torrenthub_token');
-            const panel = document.getElementById('userPanel');
-            if (!token) {
+        try {
+            const res = await fetch(`${API_URL}/api/auth/me`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await res.json();
+            if (!data.success) {
+                localStorage.removeItem('torrenthub_token');
                 panel.innerHTML = `<a href="login.html">Log In</a><a href="login.html">Register</a>`;
                 return;
             }
-            try {
-                const res = await fetch(`${API_URL}/api/auth/me`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                const data = await res.json();
-                if (!data.success) {
-                    localStorage.removeItem('torrenthub_token');
-                    panel.innerHTML = `<a href="login.html">Log In</a><a href="login.html">Register</a>`;
-                    return;
-                }
-                currentUser = data.user;
-                const isAdmin = data.user.role === 'admin' || data.user.role === 'moderator';
-                panel.innerHTML = `
-                    <div class="dropdown">
-                        <button class="dropdown-btn">👤 ${data.user.nickname}</button>
-                        <div class="dropdown-content">
-                            <div class="user-info">⭐ ${data.user.reputation || 0} pts</div>
-                            <a href="account.html">👤 My Account</a>
-                            <a href="profile.html?id=${data.user.id}">📋 My Profile</a>
-                            <a href="edit-profile.html">✏️ Edit Profile</a>
-                            <a href="upload.html">📤 Upload</a>
-                            <a href="forum.html">📚 Forum</a>
-                            <a href="top100.html">🏆 Top 100</a>
-                            <a href="users.html">👥 Users</a>
-                            <a href="search.html">🔍 Search</a>
-                            <a href="notifications.html">🔔 Notifications</a>
-                            <a href="messages.html">💬 Messages</a>
-                            <a href="badges.html">🏅 Badges</a>
-                            <a href="settings.html">⚙️ Settings</a>
-                            ${isAdmin ? `<a href="admin/" style="color:#ff4444;">🛡️ Admin Panel</a>` : ''}
-                            <a href="#" onclick="logout()">🚪 Log Out</a>
-                        </div>
+            currentUser = data.user;
+            const isAdmin = data.user.role === 'admin' || data.user.role === 'moderator';
+            panel.innerHTML = `
+                <div class="dropdown">
+                    <button class="dropdown-btn">👤 ${data.user.nickname}</button>
+                    <div class="dropdown-content">
+                        <div class="user-info">⭐ ${data.user.reputation || 0} pts</div>
+                        <a href="account.html">👤 My Account</a>
+                        <a href="profile.html?id=${data.user.id}">📋 My Profile</a>
+                        <a href="edit-profile.html">✏️ Edit Profile</a>
+                        <a href="upload.html">📤 Upload</a>
+                        <a href="forum.html">📚 Forum</a>
+                        <a href="top100.html">🏆 Top 100</a>
+                        <a href="users.html">👥 Users</a>
+                        <a href="search.html">🔍 Search</a>
+                        <a href="notifications.html">🔔 Notifications</a>
+                        <a href="messages.html">💬 Messages</a>
+                        <a href="badges.html">🏅 Badges</a>
+                        <a href="settings.html">⚙️ Settings</a>
+                        ${isAdmin ? `<a href="admin/" style="color:#ff4444;">🛡️ Admin Panel</a>` : ''}
+                        <a href="#" onclick="logout()">🚪 Log Out</a>
                     </div>
-                `;
-            } catch (e) {
-                panel.innerHTML = `<a href="login.html">Log In</a><a href="login.html">Register</a>`;
-            }
-        }
-
-        function logout() {
-            const token = localStorage.getItem('torrenthub_token');
-            if (token) {
-                fetch(`${API_URL}/api/auth/logout`, {
-                    method: 'POST',
-                    headers: { 'Authorization': `Bearer ${token}` }
-                }).catch(() => {});
-            }
-            localStorage.removeItem('torrenthub_token');
-            localStorage.removeItem('torrenthub_user');
-            window.location.href = 'index.html';
-        }
-
-        // ---------- SWITCH TAB ----------
-        function switchTab(tab) {
-            currentTab = tab;
-            document.querySelectorAll('.tab-bar button').forEach(b => b.classList.remove('active'));
-            document.querySelectorAll('.tab-bar button').forEach(b => {
-                if (b.textContent.includes(tab === 'inbox' ? 'Inbox' : 'Sent')) {
-                    b.classList.add('active');
-                }
-            });
-            loadConversations();
-        }
-
-        // ---------- LOAD CONVERSATIONS ----------
-        async function loadConversations() {
-            const container = document.getElementById('conversationsList');
-            const token = localStorage.getItem('torrenthub_token');
-            if (!token) {
-                container.innerHTML = `<div class="empty">Please <a href="login.html">log in</a>.</div>`;
-                return;
-            }
-
-            container.innerHTML = '<div class="loading">Loading...</div>';
-
-            try {
-                const endpoint = currentTab === 'inbox' ? '/api/messages/inbox' : '/api/messages/sent';
-                const res = await fetch(`${API_URL}${endpoint}`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                const data = await res.json();
-                if (!data.success) throw new Error(data.error);
-
-                renderConversations(data.messages || []);
-            } catch (err) {
-                container.innerHTML = `<div style="color:red;padding:20px;">Error: ${err.message}</div>`;
-            }
-        }
-
-        function renderConversations(messages) {
-            const container = document.getElementById('conversationsList');
-
-            if (!messages || messages.length === 0) {
-                container.innerHTML = `<div class="empty">No messages.</div>`;
-                if (!currentConversation) {
-                    document.getElementById('messageView').innerHTML = `<div class="empty">Select a conversation to view messages.</div>`;
-                }
-                return;
-            }
-
-            const conversations = {};
-            messages.forEach(m => {
-                const otherId = currentTab === 'inbox' ? m.sender_id : m.receiver_id;
-                const otherName = currentTab === 'inbox' ? m.nickname || m.username : m.nickname || m.username;
-                if (!conversations[otherId]) {
-                    conversations[otherId] = {
-                        id: otherId,
-                        name: otherName,
-                        lastMessage: m.message,
-                        lastTime: m.created_at,
-                        unread: m.read === 0
-                    };
-                } else {
-                    if (new Date(m.created_at) > new Date(conversations[otherId].lastTime)) {
-                        conversations[otherId].lastMessage = m.message;
-                        conversations[otherId].lastTime = m.created_at;
-                    }
-                    if (m.read === 0) conversations[otherId].unread = true;
-                }
-            });
-
-            let html = '';
-            Object.values(conversations).sort((a, b) => new Date(b.lastTime) - new Date(a.lastTime)).forEach(c => {
-                const time = new Date(c.lastTime).toLocaleDateString();
-                html += `
-                    <div class="conversation-item ${currentConversation === c.id ? 'active' : ''}" onclick="loadConversation(${c.id})">
-                        <div>
-                            <span class="name">${c.name}</span>
-                            ${c.unread ? `<span class="unread-badge">●</span>` : ''}
-                            <span class="time">${time}</span>
-                        </div>
-                        <div class="preview">${c.lastMessage.substring(0, 50)}${c.lastMessage.length > 50 ? '...' : ''}</div>
-                    </div>
-                `;
-            });
-
-            container.innerHTML = html;
-        }
-
-        // ---------- LOAD CONVERSATION ----------
-        async function loadConversation(otherUserId) {
-            if (isSending) return; // Don't reload while sending
-            currentConversation = otherUserId;
-            const container = document.getElementById('messageView');
-            const token = localStorage.getItem('torrenthub_token');
-            if (!token) return;
-
-            container.innerHTML = '<div class="loading">Loading messages...</div>';
-
-            try {
-                const res = await fetch(`${API_URL}/api/messages/conversation/${otherUserId}`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                const data = await res.json();
-                if (!data.success) throw new Error(data.error);
-
-                renderMessages(data.messages || [], otherUserId);
-                loadConversations();
-            } catch (err) {
-                container.innerHTML = `<div style="color:red;padding:20px;">Error: ${err.message}</div>`;
-            }
-        }
-
-        function renderMessages(messages, otherUserId) {
-            const container = document.getElementById('messageView');
-
-            let html = `<div style="max-height:500px;overflow-y:auto;margin-bottom:15px;">`;
-            if (messages.length === 0) {
-                html += `<div class="empty">No messages yet. Send the first message!</div>`;
-            } else {
-                messages.forEach(m => {
-                    const isSent = m.sender_id === (currentUser ? currentUser.id : -1);
-                    const senderName = isSent ? 'You' : (m.sender_nickname || m.sender_username || 'Unknown');
-                    const time = new Date(m.created_at).toLocaleString();
-                    let contentHtml = m.message;
-                    if (m.message && m.message.startsWith('data:')) {
-                        const isImage = m.message.startsWith('data:image');
-                        if (isImage) {
-                            contentHtml = `<div class="file-attachment"><img src="${m.message}" alt="Shared image" /></div>`;
-                        } else {
-                            const fileName = 'shared_file';
-                            contentHtml = `<div class="file-attachment"><a href="${m.message}" download="${fileName}" target="_blank">📎 Download file</a></div>`;
-                        }
-                    }
-                    html += `
-                        <div class="message-item ${isSent ? 'sent' : ''}">
-                            <div class="sender">${senderName} <span class="time">${time}</span></div>
-                            <div class="content">${contentHtml}</div>
-                        </div>
-                    `;
-                });
-            }
-            html += `</div>`;
-
-            html += `
-                <div class="message-input">
-                    <div class="file-preview" id="filePreview">
-                        <span class="file-name" id="fileName">No file selected</span>
-                        <button class="remove-file" onclick="removePendingFile()">✕</button>
-                    </div>
-                    <div class="input-row">
-                        <textarea id="messageInput" placeholder="Type a message..." rows="2"></textarea>
-                        <div class="action-buttons">
-                            <button class="attach-btn" onclick="document.getElementById('fileInput').click()">📎</button>
-                            <button onclick="sendMessage(${otherUserId})">Send</button>
-                        </div>
-                    </div>
-                    <input type="file" id="fileInput" accept="image/*,audio/*,video/*,.pdf,.zip,.txt" onchange="handleFileSelect(event)" />
                 </div>
             `;
+        } catch (e) {
+            panel.innerHTML = `<a href="login.html">Log In</a><a href="login.html">Register</a>`;
+        }
+    }
 
-            container.innerHTML = html;
+    function logout() {
+        const token = localStorage.getItem('torrenthub_token');
+        if (token) {
+            fetch(`${API_URL}/api/auth/logout`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` }
+            }).catch(() => {});
+        }
+        localStorage.removeItem('torrenthub_token');
+        window.location.href = 'index.html';
+    }
 
-            const scrollDiv = container.querySelector('div[style*="max-height"]');
-            if (scrollDiv) {
-                scrollDiv.scrollTop = scrollDiv.scrollHeight;
+    // ===== Load users for dropdown =====
+    async function loadUsersForDropdown() {
+        const token = localStorage.getItem('torrenthub_token');
+        if (!token) return;
+        try {
+            const res = await fetch(`${API_URL}/api/users`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (!res.ok) throw new Error('Failed to fetch users');
+            const users = await res.json();
+            const select = document.getElementById('recipientSelect');
+            select.innerHTML = '<option value="">-- Select a user --</option>';
+            users.forEach(u => {
+                const opt = document.createElement('option');
+                opt.value = u.id;
+                opt.textContent = u.nickname || u.username;
+                select.appendChild(opt);
+            });
+        } catch (e) {
+            console.error('Dropdown error:', e);
+        }
+    }
+
+    // ===== New Message UI =====
+    function toggleNewMessage() {
+        const area = document.getElementById('newMessageArea');
+        if (area.style.display === 'none') {
+            area.style.display = 'block';
+            loadUsersForDropdown();
+            document.getElementById('composeMessage').value = '';
+            document.getElementById('imageInput').value = '';
+            removePendingFile();
+        } else {
+            area.style.display = 'none';
+        }
+    }
+    function hideNewMessage() {
+        document.getElementById('newMessageArea').style.display = 'none';
+    }
+
+    function removePendingFile() {
+        pendingFile = null;
+        document.getElementById('filePreviewCompact').classList.remove('show');
+        document.getElementById('imageInput').value = '';
+    }
+
+    document.getElementById('imageInput').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        pendingFile = file;
+        const preview = document.getElementById('filePreviewCompact');
+        document.getElementById('fileNameCompact').textContent = file.name + ' (' + (file.size/1024).toFixed(1) + ' KB)';
+        preview.classList.add('show');
+    });
+
+    // ===== Send New Message =====
+    async function sendNewMessage() {
+        const token = localStorage.getItem('torrenthub_token');
+        if (!token) { alert('Please log in.'); return; }
+
+        const recipientId = document.getElementById('recipientSelect').value;
+        if (!recipientId) { alert('Please select a user.'); return; }
+
+        const messageText = document.getElementById('composeMessage').value.trim();
+        let imageData = null;
+
+        if (pendingFile) {
+            try {
+                imageData = await compressImage(pendingFile, 1200, 0.8);
+            } catch (err) {
+                alert('Image compression failed: ' + err.message);
+                return;
             }
+        }
 
-            document.getElementById('messageInput').addEventListener('keydown', function(e) {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    sendMessage(otherUserId);
+        if (!messageText && !imageData) {
+            alert('Please enter a message or attach an image.');
+            return;
+        }
+
+        isSending = true;
+        try {
+            const payload = {
+                receiver_id: parseInt(recipientId),
+                subject: 'Message',
+                message: messageText || '',
+                imageData: imageData || null,
+            };
+
+            const res = await fetch(`${API_URL}/api/messages`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(payload)
+            });
+
+            const data = await res.json();
+            if (res.ok) {
+                alert('Message sent!');
+                hideNewMessage();
+                if (currentConversation == recipientId) {
+                    loadConversation(recipientId);
+                } else {
+                    loadConversations();
                 }
+            } else {
+                alert('Failed to send: ' + (data.error || 'Unknown error'));
+            }
+        } catch (e) {
+            alert('Network error: ' + e.message);
+        }
+        isSending = false;
+    }
+
+    // ===== Switch Tab =====
+    function switchTab(tab) {
+        currentTab = tab;
+        document.querySelectorAll('.tab-bar button').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-bar button').forEach(b => {
+            if (b.textContent.includes(tab === 'inbox' ? 'Inbox' : 'Sent')) {
+                b.classList.add('active');
+            }
+        });
+        loadConversations();
+    }
+
+    // ===== Load Conversations =====
+    async function loadConversations() {
+        const container = document.getElementById('conversationsList');
+        const token = localStorage.getItem('torrenthub_token');
+        if (!token) {
+            container.innerHTML = `<div class="empty">Please <a href="login.html">log in</a>.</div>`;
+            return;
+        }
+        container.innerHTML = '<div class="loading">Loading...</div>';
+        try {
+            const endpoint = currentTab === 'inbox' ? '/api/messages/inbox' : '/api/messages/sent';
+            const res = await fetch(`${API_URL}${endpoint}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await res.json();
+            if (!data.success) throw new Error(data.error);
+            renderConversations(data.messages || []);
+        } catch (err) {
+            container.innerHTML = `<div style="color:red;padding:20px;">Error: ${err.message}</div>`;
+        }
+    }
+
+    function renderConversations(messages) {
+        const container = document.getElementById('conversationsList');
+        if (!messages || messages.length === 0) {
+            container.innerHTML = `<div class="empty">No messages.</div>`;
+            if (!currentConversation) {
+                document.getElementById('messageView').innerHTML = `<div class="empty">Select a conversation to view messages.</div>`;
+            }
+            return;
+        }
+
+        const conversations = {};
+        messages.forEach(m => {
+            const otherId = currentTab === 'inbox' ? m.sender_id : m.receiver_id;
+            const otherName = currentTab === 'inbox' ? (m.nickname || m.username) : (m.nickname || m.username);
+            if (!conversations[otherId]) {
+                conversations[otherId] = {
+                    id: otherId,
+                    name: otherName,
+                    lastMessage: m.message,
+                    lastTime: m.created_at,
+                    unread: m.read === 0
+                };
+            } else {
+                if (new Date(m.created_at) > new Date(conversations[otherId].lastTime)) {
+                    conversations[otherId].lastMessage = m.message;
+                    conversations[otherId].lastTime = m.created_at;
+                }
+                if (m.read === 0) conversations[otherId].unread = true;
+            }
+        });
+
+        let html = '';
+        Object.values(conversations).sort((a, b) => new Date(b.lastTime) - new Date(a.lastTime)).forEach(c => {
+            const time = new Date(c.lastTime).toLocaleDateString();
+            html += `
+                <div class="conversation-item ${currentConversation === c.id ? 'active' : ''}" onclick="loadConversation(${c.id})">
+                    <div>
+                        <span class="name">${c.name}</span>
+                        ${c.unread ? `<span class="unread-badge">●</span>` : ''}
+                        <span class="time">${time}</span>
+                    </div>
+                    <div class="preview">${c.lastMessage ? c.lastMessage.substring(0, 50) : '(image)'}${c.lastMessage && c.lastMessage.length > 50 ? '...' : ''}</div>
+                </div>
+            `;
+        });
+        container.innerHTML = html;
+    }
+
+    // ===== Load Conversation =====
+    async function loadConversation(otherUserId) {
+        if (isSending) return;
+        currentConversation = otherUserId;
+        const container = document.getElementById('messageView');
+        const token = localStorage.getItem('torrenthub_token');
+        if (!token) return;
+
+        container.innerHTML = '<div class="loading">Loading messages...</div>';
+        try {
+            const res = await fetch(`${API_URL}/api/messages/conversation/${otherUserId}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await res.json();
+            if (!data.success) throw new Error(data.error);
+            renderMessages(data.messages || [], otherUserId);
+            loadConversations();
+        } catch (err) {
+            container.innerHTML = `<div style="color:red;padding:20px;">Error: ${err.message}</div>`;
+        }
+    }
+
+    function renderMessages(messages, otherUserId) {
+        const container = document.getElementById('messageView');
+
+        let html = `<div style="max-height:500px;overflow-y:auto;margin-bottom:15px;">`;
+        if (messages.length === 0) {
+            html += `<div class="empty">No messages yet. Send the first message!</div>`;
+        } else {
+            messages.forEach(m => {
+                const isSent = m.sender_id === (currentUser ? currentUser.id : -1);
+                const senderName = isSent ? 'You' : (m.sender_nickname || m.sender_username || 'Unknown');
+                const time = new Date(m.created_at).toLocaleString();
+                let contentHtml = m.message;
+                // Check if it's an image attachment
+                if (m.attachment_url && m.attachment_url.startsWith('data:image')) {
+                    contentHtml = `<div class="file-attachment"><img src="${m.attachment_url}" alt="Image" /></div>`;
+                } else if (m.attachment_url && m.attachment_url.startsWith('https://')) {
+                    contentHtml = `<div class="file-attachment"><a href="${m.attachment_url}" target="_blank">📎 View Image</a></div>`;
+                } else if (m.message && m.message.startsWith('data:image')) {
+                    contentHtml = `<div class="file-attachment"><img src="${m.message}" alt="Shared image" /></div>`;
+                }
+                html += `
+                    <div class="message-item ${isSent ? 'sent' : ''}">
+                        <div class="sender">${senderName} <span class="time">${time}</span></div>
+                        <div class="content">${contentHtml}</div>
+                    </div>
+                `;
             });
         }
+        html += `</div>`;
 
-        // ---------- FILE HANDLING ----------
-        function handleFileSelect(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            pendingFile = file;
-            const preview = document.getElementById('filePreview');
-            const fileNameEl = document.getElementById('fileName');
-            fileNameEl.textContent = file.name + ' (' + formatFileSize(file.size) + ')';
-            preview.classList.add('show');
-            event.target.value = '';
+        // Reply box
+        html += `
+            <div class="message-input">
+                <div class="input-row">
+                    <textarea id="messageInputReply" placeholder="Type a reply..." rows="2"></textarea>
+                    <div class="action-buttons">
+                        <button class="attach-btn" onclick="document.getElementById('fileInputReply').click()">📎</button>
+                        <button onclick="sendReply(${otherUserId})">Send</button>
+                    </div>
+                </div>
+                <input type="file" id="fileInputReply" accept="image/*" style="display:none;" onchange="handleReplyFile(event)" />
+                <div id="replyFilePreview" class="file-preview" style="display:none;">
+                    <span id="replyFileName">No file</span>
+                    <button class="remove-file" onclick="removeReplyFile()">✕</button>
+                </div>
+            </div>
+        `;
+
+        container.innerHTML = html;
+
+        const scrollDiv = container.querySelector('div[style*="max-height"]');
+        if (scrollDiv) {
+            scrollDiv.scrollTop = scrollDiv.scrollHeight;
         }
 
-        function removePendingFile() {
-            pendingFile = null;
-            document.getElementById('filePreview').classList.remove('show');
+        document.getElementById('messageInputReply').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendReply(otherUserId);
+            }
+        });
+
+        // Store reply file state
+        window.replyFile = null;
+    }
+
+    // Reply file handling
+    function handleReplyFile(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        window.replyFile = file;
+        const preview = document.getElementById('replyFilePreview');
+        document.getElementById('replyFileName').textContent = file.name + ' (' + (file.size/1024).toFixed(1) + ' KB)';
+        preview.style.display = 'flex';
+        event.target.value = '';
+    }
+
+    function removeReplyFile() {
+        window.replyFile = null;
+        document.getElementById('replyFilePreview').style.display = 'none';
+        document.getElementById('fileInputReply').value = '';
+    }
+
+    async function sendReply(receiverId) {
+        const input = document.getElementById('messageInputReply');
+        let message = input.value.trim();
+        const file = window.replyFile;
+
+        if (!message && !file) {
+            alert('Please enter a message or attach an image.');
+            return;
         }
 
-        function formatFileSize(bytes) {
-            if (!bytes) return '0 B';
-            const sizes = ['B', 'KB', 'MB', 'GB'];
-            const i = Math.floor(Math.log(bytes) / Math.log(1024));
-            return (bytes / Math.pow(1024, i)).toFixed(1) + ' ' + sizes[i];
-        }
+        const token = localStorage.getItem('torrenthub_token');
+        if (!token) { alert('Please log in.'); return; }
 
-        // ---------- SEND MESSAGE ----------
-        async function sendMessage(receiverId) {
-            const input = document.getElementById('messageInput');
-            let message = input.value.trim();
-            const file = pendingFile;
-
-            if (!message && !file) {
-                alert('Please enter a message or attach a file.');
-                return;
-            }
-
-            const token = localStorage.getItem('torrenthub_token');
-            if (!token) {
-                alert('Please log in.');
-                return;
-            }
-
-            if (file) {
-                try {
-                    const reader = new FileReader();
-                    const base64 = await new Promise((resolve) => {
-                        reader.onload = (e) => resolve(e.target.result);
-                        reader.readAsDataURL(file);
-                    });
-                    if (message) {
-                        message = message + '\n[File: ' + file.name + '] ' + base64;
-                    } else {
-                        message = base64;
-                    }
-                    removePendingFile();
-                } catch (err) {
-                    alert('Failed to read file: ' + err.message);
-                    return;
-                }
-            }
-
-            isSending = true;
-
+        let imageData = null;
+        if (file) {
             try {
-                const res = await fetch(`${API_URL}/api/messages`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({
-                        receiver_id: receiverId,
-                        subject: 'Message',
-                        message: message
-                    })
-                });
-                const data = await res.json();
-                if (data.success) {
-                    input.value = '';
-                    lastMessageTime = Date.now();
-                    // Reload conversation after a small delay
-                    setTimeout(() => {
-                        isSending = false;
-                        loadConversation(receiverId);
-                    }, 300);
-                } else {
-                    isSending = false;
-                    alert('Failed to send: ' + data.error);
-                }
+                imageData = await compressImage(file, 1200, 0.8);
+                removeReplyFile();
             } catch (err) {
-                isSending = false;
-                alert('Network error: ' + err.message);
-            }
-        }
-
-        // ---------- NEW MESSAGE ----------
-        function openNewMessage() {
-            const params = new URLSearchParams(window.location.search);
-            const to = params.get('to');
-            if (to) {
-                loadConversation(parseInt(to));
+                alert('Image compression failed: ' + err.message);
                 return;
             }
-            const userId = prompt('Enter the user ID to message:');
-            if (userId && /^\d+$/.test(userId)) {
-                loadConversation(parseInt(userId));
-            }
         }
 
-        // ---------- POLLING (with cooldown) ----------
-        function checkNewMessages() {
-            // Don't poll if we just sent a message (within 3 seconds)
-            if (Date.now() - lastMessageTime < 3000) return;
-            if (isSending) return;
-            if (currentConversation) {
-                loadConversation(currentConversation);
-            }
-            loadConversations();
-        }
+        isSending = true;
+        try {
+            const payload = {
+                receiver_id: parseInt(receiverId),
+                subject: 'Reply',
+                message: message || '',
+                imageData: imageData || null,
+            };
 
-        // ---------- INIT ----------
-        loadSettingsAndApply();
-        checkLogin();
+            const res = await fetch(`${API_URL}/api/messages`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(payload)
+            });
+
+            const data = await res.json();
+            if (res.ok) {
+                input.value = '';
+                lastMessageTime = Date.now();
+                setTimeout(() => {
+                    isSending = false;
+                    loadConversation(receiverId);
+                }, 300);
+            } else {
+                isSending = false;
+                alert('Failed to send: ' + (data.error || 'Unknown error'));
+            }
+        } catch (err) {
+            isSending = false;
+            alert('Network error: ' + err.message);
+        }
+    }
+
+    // ===== Polling =====
+    function checkNewMessages() {
+        if (Date.now() - lastMessageTime < 3000) return;
+        if (isSending) return;
+        if (currentConversation) {
+            loadConversation(currentConversation);
+        }
         loadConversations();
+    }
 
-        // Poll every 10 seconds, but with cooldown
-        setInterval(checkNewMessages, 10000);
+    // ===== Init =====
+    checkLogin();
+    loadConversations();
+    setInterval(checkNewMessages, 10000);
 
-        const params = new URLSearchParams(window.location.search);
-        if (params.get('to')) {
-            setTimeout(() => {
-                loadConversation(parseInt(params.get('to')));
-            }, 500);
-        }
-    </script>
+    // If ?to= param is present, open that conversation
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('to')) {
+        setTimeout(() => {
+            loadConversation(parseInt(params.get('to')));
+        }, 500);
+    }
+</script>
 </body>
 </html>
