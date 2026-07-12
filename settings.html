@@ -256,6 +256,8 @@
             gap: 15px;
             flex-wrap: wrap;
         }
+
+        /* ⚠️ WARNING BOX - VISIBLE BY DEFAULT NOW */
         .warning-box {
             background: #fff3cd;
             border: 2px solid #dc3545;
@@ -263,14 +265,14 @@
             padding: 12px 16px;
             border-radius: 6px;
             margin: 8px 0 12px 0;
-            display: none;
             font-size: 14px;
             font-weight: 500;
+            display: flex !important;
             align-items: center;
             gap: 10px;
         }
-        .warning-box.show {
-            display: flex;
+        .warning-box.hidden {
+            display: none !important;
         }
         .warning-box .icon {
             font-size: 20px;
@@ -278,6 +280,12 @@
         .warning-box .text {
             flex: 1;
         }
+        body.dark-mode .warning-box {
+            background: #2a1a1a;
+            border-color: #dc3545;
+            color: #ff6b6b;
+        }
+
         .file-info {
             background: #f8f9fa;
             padding: 8px 12px;
@@ -328,7 +336,7 @@
         // ---------- DOM References ----------
         let themeColorInput, bgImageInput, bgFileInput, bgPreview;
         let darkModeToggle, bgToggle, animationsToggle;
-        let successMsg, warningBox;
+        let successMsg;
 
         // ---------- Load Settings ----------
         async function loadSettings() {
@@ -376,6 +384,10 @@
                 `<img src="${s.bg_image}" alt="Background preview" />` :
                 'No image. Use URL or upload a file.';
 
+            // Determine if warning should be shown
+            const showWarning = s.bg_image && s.bg_image.startsWith('data:');
+            const warningClass = showWarning ? '' : 'hidden';
+
             container.innerHTML = `
                 <div id="successMsg" class="success-msg">✅ Settings saved!</div>
 
@@ -412,7 +424,8 @@
                 <div class="settings-box">
                     <h3>🖼️ Background Image</h3>
 
-                    <div class="warning-box" id="imageWarning">
+                    <!-- ⚠️ WARNING BOX - Always rendered, hidden with class -->
+                    <div class="warning-box ${warningClass}" id="imageWarning">
                         <span class="icon">⚠️</span>
                         <span class="text"><strong>URL images are more reliable.</strong> Uploaded images are compressed and may lose quality. For best results, use an image URL.</span>
                     </div>
@@ -465,7 +478,6 @@
             bgToggle = document.getElementById('bgToggle');
             animationsToggle = document.getElementById('animationsToggle');
             successMsg = document.getElementById('successMsg');
-            warningBox = document.getElementById('imageWarning');
 
             // ---------- Attach events ----------
             themeColorInput.addEventListener('input', function() {
@@ -474,8 +486,11 @@
 
             bgImageInput.addEventListener('input', function() {
                 const val = this.value;
+                const warning = document.getElementById('imageWarning');
                 if (val && val.startsWith('http')) {
-                    warningBox.classList.remove('show');
+                    if (warning) warning.classList.add('hidden');
+                } else if (val && val.startsWith('data:')) {
+                    if (warning) warning.classList.remove('hidden');
                 }
                 updatePreview();
             });
@@ -513,11 +528,6 @@
 
             // Update preview
             updatePreview();
-
-            // Show warning if bg_image is a data URL (uploaded)
-            if (currentSettings.bg_image && currentSettings.bg_image.startsWith('data:')) {
-                warningBox.classList.add('show');
-            }
         }
 
         // ---------- Apply Preset ----------
@@ -552,8 +562,11 @@
             const file = event.target.files[0];
             if (!file) return;
 
-            // Show warning
-            if (warningBox) warningBox.classList.add('show');
+            // ✅ SHOW WARNING when file is selected
+            const warning = document.getElementById('imageWarning');
+            if (warning) {
+                warning.classList.remove('hidden');
+            }
 
             try {
                 showMessage('⏳ Compressing image...');
@@ -651,8 +664,11 @@
                     localStorage.setItem('torrenthub_bg', bgEnabled && bgImage ? bgImage : 'none');
 
                     // Hide warning if URL was used
+                    const warning = document.getElementById('imageWarning');
                     if (bgImage && bgImage.startsWith('http')) {
-                        if (warningBox) warningBox.classList.remove('show');
+                        if (warning) warning.classList.add('hidden');
+                    } else if (bgImage && bgImage.startsWith('data:')) {
+                        if (warning) warning.classList.remove('hidden');
                     }
                 } else {
                     showMessage('❌ Failed to save: ' + (data.error || 'Unknown error'));
@@ -687,7 +703,10 @@
             document.body.style.background = '#e8e4e0';
             document.getElementById('mainHeader').style.background = '#ff6b00';
 
-            if (warningBox) warningBox.classList.remove('show');
+            // Hide warning
+            const warning = document.getElementById('imageWarning');
+            if (warning) warning.classList.add('hidden');
+
             updatePreview();
             showMessage('✅ Reset to defaults! Click Save to confirm.');
         }
