@@ -8,8 +8,9 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #e8e4e0; color: #333; transition: all 0.3s ease; }
         body.dark-mode { background: #1a1a2e; color: #e0e0e0; }
-        body.dark-mode .notification-item { background: #2a2a3e; color: #e0e0e0; }
-        body.dark-mode .notification-item:hover { background: #3a3a5e; }
+        body.dark-mode .notif-item { background: #2a2a3e; color: #e0e0e0; }
+        body.dark-mode .notif-item:hover { background: #3a3a5e; }
+        body.dark-mode .notif-item.unread { border-left-color: #ff6b00; background: #2a1a2e; }
         body.dark-mode .nav { background: #16162a; }
         body.dark-mode .nav a { color: #aaa; }
         body.dark-mode .nav a:hover { color: #ff6b00; }
@@ -17,6 +18,8 @@
         body.dark-mode .dropdown-content a { color: #e0e0e0; }
         body.dark-mode .dropdown-content a:hover { background: #3a3a5e; }
         body.dark-mode .user-info { border-bottom-color: #444; color: #e0e0e0; }
+        body.dark-mode .notif-time { color: #888; }
+        body.dark-mode .notif-empty { color: #888; }
 
         .header { background: #ff6b00; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; transition: background 0.3s; }
         .header h1 { color: #fff; font-size: 24px; }
@@ -25,24 +28,21 @@
         .nav a { color: #ccc; text-decoration: none; font-size: 14px; font-weight: 500; }
         .nav a:hover { color: #ff6b00; }
         .container { max-width: 800px; margin: 30px auto; padding: 0 20px; }
-        .notification-item { background: #fff; padding: 15px 20px; border-radius: 8px; margin-bottom: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); transition: background 0.3s; display: flex; align-items: center; gap: 15px; }
-        .notification-item:hover { background: #f9f9f9; }
-        .notification-item.unread { border-left: 3px solid #ff6b00; }
-        .notification-item .icon { font-size: 24px; }
-        .notification-item .content { flex: 1; }
-        .notification-item .content .message { font-size: 14px; }
-        .notification-item .content .time { font-size: 12px; color: #888; margin-top: 4px; }
-        .notification-item .actions { display: flex; gap: 10px; }
-        .notification-item .actions button { background: none; border: none; cursor: pointer; font-size: 14px; color: #888; padding: 4px 8px; border-radius: 4px; }
-        .notification-item .actions button:hover { background: #f0f0f0; }
-        .notification-item .actions .mark-read { color: #28a745; }
+        .notif-item { background: #fff; padding: 15px 20px; border-radius: 8px; margin-bottom: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); transition: background 0.3s; display: flex; align-items: center; gap: 15px; }
+        .notif-item:hover { background: #f9f9f9; }
+        .notif-item.unread { border-left: 3px solid #ff6b00; background: #fff9f0; }
+        .notif-item .icon { font-size: 28px; flex-shrink: 0; width: 40px; text-align: center; }
+        .notif-item .content { flex: 1; }
+        .notif-item .content .message { font-size: 14px; }
+        .notif-item .content .time { font-size: 12px; color: #888; margin-top: 4px; }
+        .notif-item .actions button { background: none; border: none; cursor: pointer; font-size: 14px; color: #28a745; padding: 4px 8px; border-radius: 4px; }
+        .notif-item .actions button:hover { background: #e8f5e9; }
         .btn { display: inline-block; padding: 8px 16px; background: #ff6b00; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; text-decoration: none; }
         .btn:hover { background: #e55f00; }
         .btn-secondary { background: #6c757d; }
         .btn-secondary:hover { background: #5a6268; }
         .empty { text-align: center; padding: 40px; color: #888; }
         .loading { text-align: center; padding: 40px; color: #888; }
-
         .user-panel { display: flex; gap: 10px; align-items: center; }
         .user-panel a { background: #fff; color: #ff6b00; padding: 8px 16px; border-radius: 4px; text-decoration: none; font-weight: 600; }
         .user-panel a:hover { background: #f0f0f0; }
@@ -54,8 +54,8 @@
         .dropdown-content a:hover, .dropdown-content button:hover { background: #f5f5f5; }
         .dropdown:hover .dropdown-content { display: block; }
         .user-info { padding: 10px 20px; border-bottom: 1px solid #eee; font-weight: 600; color: #333; }
-        .badge { background: #dc3545; color: #fff; border-radius: 50%; padding: 1px 6px; font-size: 10px; margin-left: 5px; }
         .header-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+        .notif-time { font-size: 12px; color: #888; margin-top: 4px; }
     </style>
 </head>
 <body>
@@ -213,7 +213,7 @@
             window.location.href = 'index.html';
         }
 
-        // ---------- LOAD NOTIFICATIONS ----------
+        // ---------- NOTIFICATIONS ----------
         async function loadNotifications() {
             const container = document.getElementById('notificationsContainer');
             const token = localStorage.getItem('torrenthub_token');
@@ -237,48 +237,7 @@
             }
         }
 
-        function renderNotifications(notifications, unreadCount) {
-            const container = document.getElementById('notificationsContainer');
-
-            if (!notifications || notifications.length === 0) {
-                container.innerHTML = '<div class="empty">📭 No notifications yet.</div>';
-                return;
-            }
-
-            let html = '';
-            notifications.forEach(n => {
-                const isUnread = n.read === 0;
-                const time = new Date(n.created_at).toLocaleString();
-                const icon = getNotificationIcon(n.type);
-
-                html += `
-                    <div class="notification-item ${isUnread ? 'unread' : ''}" data-id="${n.id}">
-                        <div class="icon">${icon}</div>
-                        <div class="content">
-                            <div class="message">${n.message || n.type}</div>
-                            <div class="time">${time} ${n.source_user_id ? `— from ${n.nickname || 'Unknown'}` : ''}</div>
-                        </div>
-                        <div class="actions">
-                            ${isUnread ? `<button class="mark-read" onclick="markRead(${n.id})">✅</button>` : ''}
-                        </div>
-                    </div>
-                `;
-            });
-
-            container.innerHTML = html;
-            // Update badge
-            const badgeEl = document.querySelector('.badge');
-            if (badgeEl) {
-                if (unreadCount > 0) {
-                    badgeEl.textContent = unreadCount;
-                    badgeEl.style.display = 'inline';
-                } else {
-                    badgeEl.style.display = 'none';
-                }
-            }
-        }
-
-        function getNotificationIcon(type) {
+        function getNotifIcon(type) {
             const icons = {
                 'post_vote': '👍',
                 'comment_vote': '👍',
@@ -292,6 +251,36 @@
                 'default': '🔔'
             };
             return icons[type] || icons.default;
+        }
+
+        function renderNotifications(notifications, unreadCount) {
+            const container = document.getElementById('notificationsContainer');
+
+            if (!notifications || notifications.length === 0) {
+                container.innerHTML = '<div class="empty">📭 No notifications yet.</div>';
+                return;
+            }
+
+            let html = '';
+            notifications.forEach(n => {
+                const isUnread = n.read === 0;
+                const icon = getNotifIcon(n.type);
+                const time = new Date(n.created_at).toLocaleString();
+                html += `
+                    <div class="notif-item ${isUnread ? 'unread' : ''}" data-id="${n.id}">
+                        <div class="icon">${icon}</div>
+                        <div class="content">
+                            <div class="message">${n.message || n.type}</div>
+                            <div class="time">${time} ${n.source_user_id ? `— from ${n.nickname || 'Unknown'}` : ''}</div>
+                        </div>
+                        <div class="actions">
+                            ${isUnread ? `<button onclick="markRead(${n.id})">✅</button>` : ''}
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
         }
 
         async function markRead(notifId) {
@@ -319,29 +308,10 @@
             } catch (e) {}
         }
 
-        // ---------- POLLING FOR NEW NOTIFICATIONS ----------
-        let lastNotifCount = 0;
-
-        async function checkNewNotifications() {
-            const token = localStorage.getItem('torrenthub_token');
-            if (!token) return;
-            try {
-                const res = await fetch(`${API_URL}/api/notifications?limit=1&unread=true`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                const data = await res.json();
-                if (data.unreadCount > lastNotifCount) {
-                    loadNotifications();
-                }
-                lastNotifCount = data.unreadCount || 0;
-            } catch (e) {}
-        }
-
         // ---------- INIT ----------
         loadSettingsAndApply();
         checkLogin();
         loadNotifications();
-        setInterval(checkNewNotifications, 30000);
     </script>
 </body>
 </html>
