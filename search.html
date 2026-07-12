@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Advanced Search - TorrentHub</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #e8e4e0; color: #333; transition: all 0.3s ease; }
+        body.dark-mode { background: #1a1a2e; color: #e0e0e0; }
+        body.dark-mode .search-result { background: #2a2a3e; color: #e0e0e0; }
+        body.dark-mode .search-result:hover { background: #3a3a5e; }
+        body.dark-mode .nav { background: #16162a; }
+        body.dark-mode .nav a { color: #aaa; }
+        body.dark-mode .nav a:hover { color: #ff6b00; }
+        body.dark-mode .dropdown-content { background: #2a2a3e; color: #e0e0e0; }
+        body.dark-mode .dropdown-content a { color: #e0e0e0; }
+        body.dark-mode .dropdown-content a:hover { background: #3a3a5e; }
+        body.dark-mode .user-info { border-bottom-color: #444; color: #e0e0e0; }
+        body.dark-mode .filter-bar input, body.dark-mode .filter-bar select {
+            background: #1a1a2e; color: #e0e0e0; border-color: #444;
+        }
+
+        .header { background: #ff6b00; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; transition: background 0.3s; }
+        .header h1 { color: #fff; font-size: 24px; }
+        .header h1 a { color: #fff; text-decoration: none; }
+        .nav { background: #2c2c2c; padding: 10px 20px; display: flex; gap: 20px; flex-wrap: wrap; }
+        .nav a { color: #ccc; text-decoration: none; font-size: 14px; font-weight: 500; }
+        .nav a:hover { color: #ff6b00; }
+        .container { max-width: 900px; margin: 30px auto; padding: 0 20px; }
+
+        .search-box { display: flex; gap: 10px; margin-bottom: 20px; }
+        .search-box input { flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 16px; transition: border-color 0.2s; }
+        .search-box input:focus { border-color: #ff6b00; outline: none; }
+        .search-box button { padding: 12px 30px; background: #ff6b00; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 16px; }
+        .search-box button:hover { background: #e55f00; }
+
+        .filter-bar { display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 20px; padding: 15px; background: #f5f5f5; border-radius: 8px; }
+        body.dark-mode .filter-bar { background: #1a1a2e; }
+        .filter-bar select, .filter-bar input { padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; }
+        .filter-bar label { font-weight: 600; font-size: 14px; display: flex; align-items: center; gap: 5px; }
+
+        .search-result { background: #fff; padding: 20px; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); transition: background 0.3s; }
+        .search-result:hover { background: #f9f9f9; }
+        .search-result h3 { margin-bottom: 5px; }
+        .search-result h3 a { color: #ff6b00; text-decoration: none; }
+        .search-result h3 a:hover { text-decoration: underline; }
+        .search-result .meta { font-size: 13px; color: #888; display: flex; gap: 15px; flex-wrap: wrap; margin-top: 8px; }
+        .search-result .meta span { margin-right: 10px; }
+        .search-result .snippet { margin-top: 8px; color: #555; }
+        body.dark-mode .search-result .snippet { color: #bbb; }
+        .search-result .badge-type { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; margin-right: 10px; }
+        .badge-torrent { background: #ff6b00; color: #fff; }
+        .badge-forum { background: #007bff; color: #fff; }
+        .badge-user { background: #28a745; color: #fff; }
+
+        .empty { text-align: center; padding: 40px; color: #888; }
+        .loading { text-align: center; padding: 40px; color: #888; }
+
+        .user-panel { display: flex; gap: 10px; align-items: center; }
+        .user-panel a { background: #fff; color: #ff6b00; padding: 8px 16px; border-radius: 4px; text-decoration: none; font-weight: 600; }
+        .user-panel a:hover { background: #f0f0f0; }
+        .dropdown { position: relative; display: inline-block; }
+        .dropdown-btn { background: #fff; color: #ff6b00; padding: 8px 16px; border-radius: 4px; border: none; font-weight: 600; cursor: pointer; }
+        .dropdown-btn:hover { background: #f0f0f0; }
+        .dropdown-content { display: none; position: absolute; right: 0; background: #fff; min-width: 220px; box-shadow: 0 8px 16px rgba(0,0,0,0.2); border-radius: 8px; z-index: 100; padding: 10px 0; }
+        .dropdown-content a, .dropdown-content button { display: block; padding: 10px 20px; color: #333; text-decoration: none; background: none; border: none; width: 100%; text-align: left; cursor: pointer; font-size: 14px; }
+        .dropdown-content a:hover, .dropdown-content button:hover { background: #f5f5f5; }
+        .dropdown:hover .dropdown-content { display: block; }
+        .user-info { padding: 10px 20px; border-bottom: 1px solid #eee; font-weight: 600; color: #333; }
+    </style>
+</head>
+<body>
+
+    <div class="header" id="mainHeader">
+        <h1><a href="index.html">🔥 TorrentHub</a></h1>
+        <div class="user-panel" id="userPanel">
+            <a href="login.html">Log In</a>
+            <a href="login.html">Register</a>
+        </div>
+    </div>
+
+    <div class="nav">
+        <a href="index.html">Home</a>
+        <a href="forum.html">Forum</a>
+        <a href="upload.html">📤 Upload</a>
+        <a href="top100.html">🏆 Top 100</a>
+        <a href="users.html">👥 Users</a>
+        <a href="search.html" class="active">🔍 Search</a>
+    </div>
+
+    <div class="container">
+        <h2>🔍 Advanced Search</h2>
+
+        <div class="search-box">
+            <input type="text" id="searchQuery" placeholder="Search torrents, forum posts, users..." />
+            <button onclick="search()">Search</button>
+        </div>
+
+        <div class="filter-bar">
+            <label>
+                Type:
+                <select id="searchType">
+                    <option value="all">All</option>
+                    <option value="torrents">Torrents</option>
+                    <option value="forum">Forum</option>
+                    <option value="users">Users</option>
+                </select>
+            </label>
+            <label>
+                Category:
+                <select id="searchCategory">
+                    <option value="">All Categories</option>
+                    <option value="Software">Software</option>
+                    <option value="Movies">Movies</option>
+                    <option value="TV Shows">TV Shows</option>
+                    <option value="Games">Games</option>
+                    <option value="Music">Music</option>
+                    <option value="Books">Books</option>
+                    <option value="Education">Education</option>
+                    <option value="Other">Other</option>
+                </select>
+            </label>
+            <label>
+                Sort:
+                <select id="searchSort">
+                    <option value="relevance">Relevance</option>
+                    <option value="newest">Newest</option>
+                    <option value="votes">Most Votes</option>
+                    <option value="downloads">Most Downloaded</option>
+                </select>
+            </label>
+            <label>
+                Limit:
+                <select id="searchLimit">
+                    <option value="10">10</option>
+                    <option value="20" selected>20</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                </select>
+            </label>
+        </div>
+
+        <div id="resultsContainer">
+            <div class="empty">Enter a search term above and click Search.</div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'https://torrenthub-api.serafimkoragin-b12.workers.dev';
+
+        // ---------- SETTINGS ----------
+        function applySettings(settings) {
+            if (settings.theme_color) {
+                document.getElementById('mainHeader').style.background = settings.theme_color;
+            }
+            if (settings.bg_enabled && settings.bg_image) {
+                document.body.style.backgroundImage = `url(${settings.bg_image})`;
+                document.body.style.backgroundSize = 'cover';
+                document.body.style.backgroundAttachment = 'fixed';
+            } else {
+                document.body.style.backgroundImage = 'none';
+                document.body.style.background = '#e8e4e0';
+            }
+            document.body.style.transition = settings.animations ? 'all 0.3s ease' : 'none';
+            const darkMode = localStorage.getItem('torrenthub_darkmode') === 'true';
+            if (darkMode) {
+                document.body.classList.add('dark-mode');
+            } else {
+                document.body.classList.remove('dark-mode');
+            }
+        }
+
+        function applyLocalSettings() {
+            const themeColor = localStorage.getItem('torrenthub_theme') || '#ff6b00';
+            document.getElementById('mainHeader').style.background = themeColor;
+            const bg = localStorage.getItem('torrenthub_bg');
+            if (bg && bg !== 'none') {
+                document.body.style.backgroundImage = `url(${bg})`;
+                document.body.style.backgroundSize = 'cover';
+                document.body.style.backgroundAttachment = 'fixed';
+            } else {
+                document.body.style.backgroundImage = 'none';
+                document.body.style.background = '#e8e4e0';
+            }
+            const animations = localStorage.getItem('torrenthub_animations') !== 'false';
+            document.body.style.transition = animations ? 'all 0.3s ease' : 'none';
+            if (localStorage.getItem('torrenthub_darkmode') === 'true') {
+                document.body.classList.add('dark-mode');
+            } else {
+                document.body.classList.remove('dark-mode');
+            }
+        }
+
+        async function loadSettingsAndApply() {
+            const token = localStorage.getItem('torrenthub_token');
+            if (!token) return;
+            try {
+                const res = await fetch(`${API_URL}/api/auth/settings`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+                if (data.success) {
+                    applySettings(data.settings);
+                } else {
+                    applyLocalSettings();
+                }
+            } catch (e) {
+                applyLocalSettings();
+            }
+        }
+
+        // ---------- LOGIN CHECK ----------
+        async function checkLogin() {
+            const token = localStorage.getItem('torrenthub_token');
+            const panel = document.getElementById('userPanel');
+            if (!token) {
+                panel.innerHTML = `<a href="login.html">Log In</a><a href="login.html">Register</a>`;
+                return;
+            }
+            try {
+                const res = await fetch(`${API_URL}/api/auth/me`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+                if (!data.success) {
+                    localStorage.removeItem('torrenthub_token');
+                    panel.innerHTML = `<a href="login.html">Log In</a><a href="login.html">Register</a>`;
+                    return;
+                }
+                const isAdmin = data.user.role === 'admin' || data.user.role === 'moderator';
+                panel.innerHTML = `
+                    <div class="dropdown">
+                        <button class="dropdown-btn">👤 ${data.user.nickname}</button>
+                        <div class="dropdown-content">
+                            <div class="user-info">⭐ ${data.user.reputation || 0} pts</div>
+                            <a href="account.html">👤 My Account</a>
+                            <a href="profile.html?id=${data.user.id}">📋 My Profile</a>
+                            <a href="edit-profile.html">✏️ Edit Profile</a>
+                            <a href="upload.html">📤 Upload</a>
+                            <a href="forum.html">📚 Forum</a>
+                            <a href="top100.html">🏆 Top 100</a>
+                            <a href="users.html">👥 Users</a>
+                            <a href="search.html">🔍 Search</a>
+                            <a href="notifications.html">🔔 Notifications</a>
+                            <a href="messages.html">💬 Messages</a>
+                            <a href="badges.html">🏅 Badges</a>
+                            <a href="settings.html">⚙️ Settings</a>
+                            ${isAdmin ? `<a href="admin/" style="color:#ff4444;">🛡️ Admin Panel</a>` : ''}
+                            <a href="#" onclick="logout()">🚪 Log Out</a>
+                        </div>
+                    </div>
+                `;
+            } catch (e) {
+                panel.innerHTML = `<a href="login.html">Log In</a><a href="login.html">Register</a>`;
+            }
+        }
+
+        function logout() {
+            const token = localStorage.getItem('torrenthub_token');
+            if (token) {
+                fetch(`${API_URL}/api/auth/logout`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                }).catch(() => {});
+            }
+            localStorage.removeItem('torrenthub_token');
+            localStorage.removeItem('torrenthub_user');
+            window.location.href = 'index.html';
+        }
+
+        // ---------- SEARCH ----------
+        async function search() {
+            const query = document.getElementById('searchQuery').value.trim();
+            if (!query || query.length < 2) {
+                document.getElementById('resultsContainer').innerHTML = `<div class="empty">Please enter at least 2 characters.</div>`;
+                return;
+            }
+
+            const type = document.getElementById('searchType').value;
+            const category = document.getElementById('searchCategory').value;
+            const sort = document.getElementById('searchSort').value;
+            const limit = document.getElementById('searchLimit').value;
+
+            const container = document.getElementById('resultsContainer');
+            container.innerHTML = '<div class="loading">Searching...</div>';
+
+            try {
+                const params = new URLSearchParams({
+                    q: query,
+                    type: type,
+                    category: category,
+                    sort: sort,
+                    limit: limit
+                });
+
+                const res = await fetch(`${API_URL}/api/search?${params}`);
+                const data = await res.json();
+
+                if (!data.success) throw new Error(data.error);
+
+                renderResults(data.results || {});
+            } catch (err) {
+                container.innerHTML = `<div style="color:red;padding:20px;">Error: ${err.message}</div>`;
+            }
+        }
+
+        function renderResults(results) {
+            const container = document.getElementById('resultsContainer');
+            const total = (results.torrents?.length || 0) + (results.forum?.length || 0) + (results.users?.length || 0);
+
+            if (total === 0) {
+                container.innerHTML = `<div class="empty">No results found. Try different keywords.</div>`;
+                return;
+            }
+
+            let html = `<div style="margin-bottom:15px;color:#888;">Found ${total} results</div>`;
+
+            // Torrents
+            if (results.torrents && results.torrents.length > 0) {
+                html += `<h3 style="margin-bottom:10px;">📥 Torrents (${results.torrents.length})</h3>`;
+                results.torrents.forEach(t => {
+                    const size = formatFileSize(t.file_size);
+                    html += `
+                        <div class="search-result">
+                            <h3><span class="badge-type badge-torrent">Torrent</span><a href="torrent.html?id=${t.id}">${t.title}</a></h3>
+                            <div class="snippet">${t.description ? t.description.substring(0, 200) : ''}...</div>
+                            <div class="meta">
+                                <span>📂 ${t.category || 'General'}</span>
+                                <span>📦 ${size}</span>
+                                <span>👍 ${t.vote_score || 0}</span>
+                                <span>👤 <a href="profile.html?id=${t.uploader_id}" style="color:#888;text-decoration:none;">${t.nickname || t.username}</a></span>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+
+            // Forum
+            if (results.forum && results.forum.length > 0) {
+                html += `<h3 style="margin-bottom:10px;margin-top:20px;">💬 Forum Posts (${results.forum.length})</h3>`;
+                results.forum.forEach(p => {
+                    html += `
+                        <div class="search-result">
+                            <h3><span class="badge-type badge-forum">Forum</span><a href="post.html?id=${p.id}">${p.title}</a></h3>
+                            <div class="snippet">${p.content ? p.content.substring(0, 200) : ''}...</div>
+                            <div class="meta">
+                                <span>📌 ${p.topic_name || 'General'}</span>
+                                <span>💬 ${p.comment_count || 0}</span>
+                                <span>👍 ${p.vote_score || 0}</span>
+                                <span>👤 <a href="profile.html?id=${p.author_id}" style="color:#888;text-decoration:none;">${p.nickname || p.username}</a></span>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+
+            // Users
+            if (results.users && results.users.length > 0) {
+                html += `<h3 style="margin-bottom:10px;margin-top:20px;">👥 Users (${results.users.length})</h3>`;
+                results.users.forEach(u => {
+                    const avatarChar = u.nickname ? u.nickname.charAt(0).toUpperCase() : u.username.charAt(0).toUpperCase();
+                    html += `
+                        <div class="search-result">
+                            <h3><span class="badge-type badge-user">User</span><a href="profile.html?id=${u.id}">${u.nickname || u.username}</a></h3>
+                            <div class="snippet">${u.bio || ''}</div>
+                            <div class="meta">
+                                <span>@${u.username}</span>
+                                <span>⭐ ${u.reputation || 0}</span>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+
+            container.innerHTML = html;
+        }
+
+        function formatFileSize(bytes) {
+            if (!bytes || bytes === 0) return 'Unknown';
+            const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(1024));
+            return (bytes / Math.pow(1024, i)).toFixed(1) + ' ' + sizes[i];
+        }
+
+        // ---------- URL PARAMS ----------
+        function loadFromURL() {
+            const params = new URLSearchParams(window.location.search);
+            const q = params.get('q');
+            if (q) {
+                document.getElementById('searchQuery').value = q;
+                const type = params.get('type');
+                if (type) document.getElementById('searchType').value = type;
+                search();
+            }
+        }
+
+        document.getElementById('searchQuery').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') search();
+        });
+
+        // ---------- INIT ----------
+        loadSettingsAndApply();
+        checkLogin();
+        loadFromURL();
+    </script>
+</body>
+</html>
