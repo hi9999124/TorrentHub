@@ -6,189 +6,43 @@
     <title>Settings - TorrentHub</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #e8e4e0;
-            color: #333;
-            transition: all 0.3s ease;
-        }
-        .header {
-            background: #ff6b00;
-            padding: 15px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #e8e4e0; color: #333; }
+        .header { background: #ff6b00; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; }
         .header h1 { color: #fff; font-size: 24px; }
         .header h1 a { color: #fff; text-decoration: none; }
-        .nav {
-            background: #2c2c2c;
-            padding: 10px 20px;
-        }
-        .nav a {
-            color: #ccc;
-            text-decoration: none;
-            margin-right: 20px;
-            font-size: 14px;
-        }
+        .nav { background: #2c2c2c; padding: 10px 20px; }
+        .nav a { color: #ccc; text-decoration: none; margin-right: 20px; font-size: 14px; }
         .nav a:hover { color: #ff6b00; }
-        .container {
-            max-width: 700px;
-            margin: 30px auto;
-            padding: 0 20px;
-        }
-        .settings-box {
-            background: #fff;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
-        }
-        .settings-box h3 {
-            color: #333;
-            margin-bottom: 20px;
-            border-bottom: 2px solid #ff6b00;
-            padding-bottom: 10px;
-        }
-        .setting-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 12px 0;
-            border-bottom: 1px solid #eee;
-        }
-        .setting-row label {
-            font-weight: 600;
-            color: #555;
-            min-width: 120px;
-        }
-        .setting-row input[type="color"] {
-            width: 60px;
-            height: 40px;
-            border: none;
-            cursor: pointer;
-            background: none;
-            padding: 0;
-        }
-        .setting-row input[type="url"], .setting-row input[type="text"] {
-            flex: 1;
-            padding: 8px 12px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            margin-left: 15px;
-        }
-        .preset-themes {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-        .preset-themes button {
-            padding: 8px 16px;
-            border: 2px solid #ddd;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: 600;
-            background: #fff;
-            transition: all 0.2s;
-        }
-        .preset-themes button:hover {
-            border-color: #ff6b00;
-            transform: scale(1.05);
-        }
-        .preset-themes button.active {
-            border-color: #ff6b00;
-            background: #fff5eb;
-        }
-        .btn {
-            padding: 10px 24px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: 600;
-            margin-top: 15px;
-            transition: all 0.2s;
-        }
-        .btn-orange {
-            background: #ff6b00;
-            color: #fff;
-        }
+        .container { max-width: 700px; margin: 30px auto; padding: 0 20px; }
+        .settings-box { background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        .settings-box h3 { color: #333; margin-bottom: 20px; border-bottom: 2px solid #ff6b00; padding-bottom: 10px; }
+        .setting-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #eee; }
+        .setting-row label { font-weight: 600; color: #555; min-width: 120px; }
+        .setting-row input[type="color"] { width: 60px; height: 40px; border: none; cursor: pointer; padding: 0; }
+        .setting-row input[type="url"] { flex: 1; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; margin-left: 15px; }
+        .preset-themes { display: flex; gap: 10px; flex-wrap: wrap; }
+        .preset-themes button { padding: 8px 16px; border: 2px solid #ddd; border-radius: 4px; cursor: pointer; font-weight: 600; background: #fff; transition: 0.2s; }
+        .preset-themes button:hover { border-color: #ff6b00; transform: scale(1.05); }
+        .btn { padding: 10px 24px; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; margin-top: 15px; }
+        .btn-orange { background: #ff6b00; color: #fff; }
         .btn-orange:hover { background: #e55f00; }
-        .btn-gray {
-            background: #6c757d;
-            color: #fff;
-        }
+        .btn-gray { background: #6c757d; color: #fff; }
         .btn-gray:hover { background: #5a6268; }
-        .toggle-switch {
-            position: relative;
-            width: 50px;
-            height: 26px;
-            background: #ccc;
-            border-radius: 13px;
-            cursor: pointer;
-            transition: background 0.3s;
-            flex-shrink: 0;
-        }
-        .toggle-switch.active {
-            background: #ff6b00;
-        }
-        .toggle-switch .slider {
-            position: absolute;
-            top: 3px;
-            left: 3px;
-            width: 20px;
-            height: 20px;
-            background: #fff;
-            border-radius: 50%;
-            transition: left 0.3s;
-        }
-        .toggle-switch.active .slider {
-            left: 27px;
-        }
-        .loading {
-            text-align: center;
-            padding: 40px;
-            color: #666;
-        }
-        .error-box {
-            background: #f8d7da;
-            border: 1px solid #f5c6cb;
-            color: #721c24;
-            padding: 20px;
-            border-radius: 4px;
-            margin: 20px;
-        }
-        .success-msg {
-            background: #d4edda;
-            border: 1px solid #28a745;
-            color: #155724;
-            padding: 15px;
-            border-radius: 4px;
-            margin-bottom: 20px;
-            display: none;
-        }
+        .toggle-switch { position: relative; width: 50px; height: 26px; background: #ccc; border-radius: 13px; cursor: pointer; transition: background 0.3s; flex-shrink: 0; }
+        .toggle-switch.active { background: #ff6b00; }
+        .toggle-switch .slider { position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; background: #fff; border-radius: 50%; transition: left 0.3s; }
+        .toggle-switch.active .slider { left: 27px; }
+        .loading { text-align: center; padding: 40px; color: #666; }
+        .error-box { background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; padding: 20px; border-radius: 4px; margin: 20px; }
+        .success-msg { background: #d4edda; border: 1px solid #28a745; color: #155724; padding: 15px; border-radius: 4px; margin-bottom: 20px; display: none; }
         .success-msg.show { display: block; }
-        @media (max-width: 600px) {
-            .setting-row { flex-wrap: wrap; }
-            .setting-row label { min-width: 100%; margin-bottom: 5px; }
-            .setting-row input[type="url"] { margin-left: 0; }
-        }
+        .bg-preview { width: 100%; height: 80px; border-radius: 4px; background: #e8e4e0; }
     </style>
 </head>
 <body>
-
-<div class="header">
-    <h1><a href="index.html">🔥 TorrentHub</a></h1>
-</div>
-
-<div class="nav">
-    <a href="index.html">← Home</a>
-    <a href="account.html">My Account</a>
-    <a href="#" onclick="logout()">Log Out</a>
-</div>
-
-<div class="container" id="mainContainer">
-    <div class="loading">⏳ Loading settings...</div>
-</div>
+<div class="header"><h1><a href="index.html">🔥 TorrentHub</a></h1></div>
+<div class="nav"><a href="index.html">← Home</a><a href="account.html">My Account</a><a href="#" onclick="logout()">Log Out</a></div>
+<div class="container" id="mainContainer"><div class="loading">⏳ Loading settings...</div></div>
 
 <script>
 const API_URL = 'https://torrenthub-api.serafimkoragin-b12.workers.dev';
@@ -198,27 +52,18 @@ let token = null;
 async function loadSettings() {
     const container = document.getElementById('mainContainer');
     token = localStorage.getItem('torrenthub_token');
-
     if (!token) {
         container.innerHTML = `<div class="error-box">❌ Not logged in. <a href="login.html">Log in</a></div>`;
         return;
     }
-
     try {
         const res = await fetch(`${API_URL}/api/auth/settings`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
-        if (!res.ok) throw new Error('Failed to load settings');
+        if (!res.ok) throw new Error('Failed to load');
         const data = await res.json();
         if (!data.success) throw new Error(data.error || 'Error');
-
-        currentSettings = data.settings || {
-            theme_color: '#ff6b00',
-            bg_image: '',
-            animations: true,
-            bg_enabled: false
-        };
-
+        currentSettings = data.settings || { theme_color: '#ff6b00', bg_image: '', animations: true, bg_enabled: false };
         renderSettings();
     } catch (err) {
         container.innerHTML = `<div class="error-box">❌ ${err.message}</div>`;
@@ -226,12 +71,9 @@ async function loadSettings() {
 }
 
 function renderSettings() {
-    const container = document.getElementById('mainContainer');
     const s = currentSettings;
-
-    container.innerHTML = `
+    document.getElementById('mainContainer').innerHTML = `
         <div id="successMsg" class="success-msg">✅ Settings saved!</div>
-
         <div class="settings-box">
             <h3>🎨 Theme & Colors</h3>
             <div class="setting-row">
@@ -250,7 +92,6 @@ function renderSettings() {
                 </div>
             </div>
         </div>
-
         <div class="settings-box">
             <h3>🖼️ Background</h3>
             <div class="setting-row">
@@ -263,36 +104,32 @@ function renderSettings() {
                 <label>Image URL</label>
                 <input type="url" id="bgImage" value="${s.bg_image || ''}" placeholder="https://example.com/image.jpg">
             </div>
-            <div class="setting-row" style="border-bottom: none;">
+            <div class="setting-row" style="border-bottom:none;">
                 <label>Preview</label>
-                <div style="width:100%; height:80px; border-radius:4px; background:${s.bg_enabled && s.bg_image ? `url(${s.bg_image}) center/cover` : '#e8e4e0'};" id="bgPreview"></div>
+                <div class="bg-preview" id="bgPreview"></div>
             </div>
         </div>
-
         <div class="settings-box">
             <h3>✨ Animations</h3>
-            <div class="setting-row" style="border-bottom: none;">
+            <div class="setting-row" style="border-bottom:none;">
                 <label>Enable Animations</label>
-                <div class="toggle-switch ${s.animations ? 'active' : ''}" onclick="toggleAnimations()">
+                <div class="toggle-switch ${s.animations ? 'active' : ''}" onclick="toggleAnimationsUI()">
                     <div class="slider"></div>
                 </div>
             </div>
         </div>
-
         <div style="display:flex; gap:15px; flex-wrap:wrap;">
             <button class="btn btn-orange" onclick="saveSettings()">💾 Save All Settings</button>
-            <button class="btn btn-gray" onclick="resetToDefault()">↺ Reset Defaults</button>
+            <button class="btn btn-gray" onclick="resetDefaults()">↺ Reset Defaults</button>
         </div>
     `;
-
-    // Update preview
     updatePreview();
 }
 
 function previewColor(color) {
     document.querySelector('.header').style.background = color;
     document.querySelectorAll('.category-header, .torrent-header, .search-bar button, .forum-icon').forEach(el => {
-        el.style.background = color;
+        if (el) el.style.background = color;
     });
     document.getElementById('themeColor').value = color;
 }
@@ -309,7 +146,7 @@ function toggleBg() {
     updatePreview();
 }
 
-function toggleAnimations() {
+function toggleAnimationsUI() {
     const toggle = document.querySelectorAll('#mainContainer .toggle-switch')[1];
     const isActive = toggle.classList.toggle('active');
     currentSettings.animations = isActive;
@@ -321,17 +158,14 @@ function toggleAnimations() {
 }
 
 function updatePreview() {
-    const bgImage = document.getElementById('bgImage').value;
+    const bgImage = document.getElementById('bgImage')?.value || '';
     const preview = document.getElementById('bgPreview');
-    if (currentSettings.bg_enabled && bgImage) {
-        preview.style.background = `url(${bgImage}) center/cover`;
-        document.body.style.backgroundImage = `url(${bgImage})`;
-        document.body.style.backgroundSize = 'cover';
-        document.body.style.backgroundAttachment = 'fixed';
-    } else {
-        preview.style.background = '#e8e4e0';
-        document.body.style.backgroundImage = 'none';
-        document.body.style.background = '#e8e4e0';
+    if (preview) {
+        if (currentSettings.bg_enabled && bgImage) {
+            preview.style.background = `url(${bgImage}) center/cover`;
+        } else {
+            preview.style.background = '#e8e4e0';
+        }
     }
 }
 
@@ -341,20 +175,11 @@ async function saveSettings() {
     const bgEnabled = currentSettings.bg_enabled;
     const animations = currentSettings.animations;
 
-    const payload = {
-        theme_color: themeColor,
-        bg_image: bgImage,
-        bg_enabled: bgEnabled,
-        animations: animations
-    };
-
+    const payload = { theme_color: themeColor, bg_image: bgImage, bg_enabled: bgEnabled, animations: animations };
     try {
         const res = await fetch(`${API_URL}/api/auth/settings`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
             body: JSON.stringify(payload)
         });
         const data = await res.json();
@@ -362,34 +187,28 @@ async function saveSettings() {
             const msg = document.getElementById('successMsg');
             msg.classList.add('show');
             setTimeout(() => msg.classList.remove('show'), 3000);
-            // Apply to header and others
+            // Apply to header
             document.querySelector('.header').style.background = themeColor;
             document.querySelectorAll('.category-header, .torrent-header, .search-bar button, .forum-icon').forEach(el => {
-                el.style.background = themeColor;
+                if (el) el.style.background = themeColor;
             });
-            // Save to localStorage for quick apply on next load
             localStorage.setItem('torrenthub_theme', themeColor);
             localStorage.setItem('torrenthub_animations', animations);
-            if (bgEnabled && bgImage) {
-                localStorage.setItem('torrenthub_bg', bgImage);
-            } else {
-                localStorage.setItem('torrenthub_bg', 'none');
-            }
+            localStorage.setItem('torrenthub_bg', bgEnabled && bgImage ? bgImage : 'none');
         } else {
-            alert('Failed to save: ' + (data.error || 'Unknown error'));
+            alert('Failed: ' + (data.error || 'Unknown error'));
         }
     } catch (err) {
         alert('Network error: ' + err.message);
     }
 }
 
-function resetToDefault() {
+function resetDefaults() {
     if (!confirm('Reset all settings to default?')) return;
     document.getElementById('themeColor').value = '#ff6b00';
     document.getElementById('bgImage').value = '';
     currentSettings.bg_enabled = false;
     currentSettings.animations = true;
-    // Toggles
     const toggles = document.querySelectorAll('#mainContainer .toggle-switch');
     toggles[0].classList.remove('active');
     toggles[1].classList.add('active');
@@ -404,10 +223,7 @@ function resetToDefault() {
 function logout() {
     const token = localStorage.getItem('torrenthub_token');
     if (token) {
-        fetch(`${API_URL}/api/auth/logout`, {
-            method: 'POST',
-            headers: { 'Authorization': `Bearer ${token}` }
-        }).catch(() => {});
+        fetch(`${API_URL}/api/auth/logout`, { method: 'POST', headers: { 'Authorization': `Bearer ${token}` } }).catch(() => {});
     }
     localStorage.removeItem('torrenthub_token');
     localStorage.removeItem('torrenthub_user');
@@ -423,6 +239,5 @@ document.addEventListener('input', function(e) {
 
 loadSettings();
 </script>
-
 </body>
 </html>
