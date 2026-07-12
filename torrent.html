@@ -117,11 +117,29 @@
     </div>
 
     <script>
-        // ✅ FIXED: Use the Cloudflare Worker URL, not GitHub Pages
+        // ✅ API URL
         const API_URL = 'https://torrenthub-api.serafimkoragin-b12.workers.dev';
         let currentUser = null;
         let torrentId = null;
         let torrentData = null;
+
+        // ---------- Date Formatting ----------
+        function getTimeFormat() {
+            return localStorage.getItem('torrenthub_timeformat') || '12h';
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            const options = { year: 'numeric', month: 'long', day: 'numeric' };
+            const timeFormat = getTimeFormat();
+            let timeStr;
+            if (timeFormat === '24h') {
+                timeStr = date.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+            } else {
+                timeStr = date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+            }
+            return date.toLocaleDateString('en-US', options) + ', ' + timeStr;
+        }
 
         // ---------- Get torrent ID ----------
         function getTorrentId() {
@@ -210,7 +228,7 @@
 
             const isLoggedIn = !!localStorage.getItem('torrenthub_token');
 
-            // ✅ FIXED: Download buttons use FULL API_URL
+            // ✅ Download buttons use FULL API_URL
             let downloadButtons = '';
             if (t.file_data && t.file_data.length > 0) {
                 downloadButtons += `
@@ -231,6 +249,9 @@
                 downloadButtons = '<p style="color:#999;">No download available for this torrent.</p>';
             }
 
+            // Format date
+            const formattedDate = formatDate(t.created_at);
+
             container.innerHTML = `
                 <div class="torrent-detail">
                     <h2>${t.title}</h2>
@@ -241,7 +262,7 @@
                         <span class="seeders" style="color:#28a745;">🟢 ${t.seeders || 0} seeders</span>
                         <span class="leechers" style="color:#dc3545;">🔴 ${t.leechers || 0} leechers</span>
                         <span>👤 ${t.nickname || t.username}</span>
-                        <span>📅 ${new Date(t.created_at).toLocaleDateString()}</span>
+                        <span>📅 ${formattedDate}</span>
                         <span>⬇️ ${t.download_count || 0} downloads</span>
                     </div>
 
