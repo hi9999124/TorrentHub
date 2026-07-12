@@ -201,7 +201,6 @@
         <div class="loading">⏳ Loading your account...</div>
     </div>
 
-    <!-- EDIT PROFILE MODAL -->
     <div class="modal-overlay" id="editProfileModal">
         <div class="modal-box">
             <h3>✏️ Edit Profile</h3>
@@ -224,7 +223,6 @@
         </div>
     </div>
 
-    <!-- CHANGE PASSWORD MODAL -->
     <div class="modal-overlay" id="changePasswordModal">
         <div class="modal-box">
             <h3>🔒 Change Password</h3>
@@ -278,34 +276,34 @@
                 }
                 
                 currentUser = data.user;
-                userHas2FA = data.user.two_factor_enabled;
+                userHas2FA = currentUser.two_factor_enabled;
                 
                 container.innerHTML = `
                     <div class="account-box">
                         <h3>👤 My Profile</h3>
                         <div class="info-row">
                             <label>Username</label>
-                            <span>${user.username}</span>
+                            <span>${currentUser.username}</span>
                         </div>
                         <div class="info-row">
                             <label>Nickname</label>
-                            <span>${user.nickname}</span>
+                            <span>${currentUser.nickname}</span>
                         </div>
                         <div class="info-row">
                             <label>Email</label>
-                            <span>${user.email}</span>
+                            <span>${currentUser.email}</span>
                         </div>
                         <div class="info-row">
                             <label>Member Since</label>
-                            <span>July 11, 2026</span>
+                            <span>July 2026</span>
                         </div>
                         <div class="info-row">
                             <label>Reputation</label>
-                            <span>⭐ ${user.reputation || 0} points</span>
+                            <span>⭐ ${currentUser.reputation || 0} points</span>
                         </div>
                         <div class="info-row">
                             <label>2-Step Verification</label>
-                            <span>${user.two_factor_enabled ? '✅ Enabled' : '❌ Disabled'}</span>
+                            <span>${currentUser.two_factor_enabled ? '✅ Enabled' : '❌ Disabled'}</span>
                         </div>
                         <button class="btn btn-orange" onclick="openEditProfile()">Edit Profile</button>
                         <button class="btn btn-gray" onclick="openChangePassword()">Change Password</button>
@@ -316,7 +314,7 @@
                         <p style="color: #666; margin-bottom: 15px; font-size: 14px;">You can create up to 3 alternate accounts for different purposes.</p>
                         <div class="alt-account">
                             <div>
-                                <strong>${user.username}_alt1</strong> <span style="color: #999; font-size: 12px;">(Uploader)</span>
+                                <strong>${currentUser.username}_alt1</strong> <span style="color: #999; font-size: 12px;">(Uploader)</span>
                             </div>
                             <button onclick="deleteAlt(this)">Delete</button>
                         </div>
