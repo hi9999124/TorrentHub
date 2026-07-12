@@ -526,7 +526,7 @@
         }
 
         function applySettings(settings) {
-            // Theme color (apply to header background)
+            // Theme color
             if (settings.theme_color) {
                 document.querySelector('.header').style.background = settings.theme_color;
                 document.querySelector('.search-bar button').style.background = settings.theme_color;
@@ -539,9 +539,6 @@
                 document.querySelectorAll('.forum-icon').forEach(el => {
                     el.style.background = settings.theme_color;
                 });
-                // Also apply to any other orange elements
-                const primaryColor = settings.theme_color;
-                document.documentElement.style.setProperty('--primary-color', primaryColor);
             }
             // Background
             if (settings.bg_enabled && settings.bg_image) {
