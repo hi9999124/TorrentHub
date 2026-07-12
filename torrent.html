@@ -6,19 +6,44 @@
     <title>Torrent Details - TorrentHub</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #e8e4e0; color: #333; }
-        .header { background: #ff6b00; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #e8e4e0; color: #333; transition: all 0.3s ease; }
+        body.dark-mode { background: #1a1a2e; color: #e0e0e0; }
+        body.dark-mode .torrent-detail { background: #2a2a3e; color: #e0e0e0; }
+        body.dark-mode .torrent-detail h2 { color: #e0e0e0; }
+        body.dark-mode .torrent-detail .meta { color: #aaa; }
+        body.dark-mode .torrent-detail .meta span { color: #aaa; }
+        body.dark-mode .torrent-detail .description { background: #1a1a2e; color: #ccc; }
+        body.dark-mode .nav { background: #16162a; }
+        body.dark-mode .nav a { color: #aaa; }
+        body.dark-mode .nav a:hover { color: #ff6b00; }
+        body.dark-mode .comment { border-bottom-color: #444; }
+        body.dark-mode .comment .author { color: #e0e0e0; }
+        body.dark-mode .comment .content { color: #ccc; }
+        body.dark-mode .comment .actions button { color: #aaa; }
+        body.dark-mode .comment .actions button:hover { background: #333; }
+        body.dark-mode .comment-form textarea { background: #1a1a2e; color: #e0e0e0; border-color: #444; }
+        body.dark-mode .comment-form textarea:focus { border-color: #ff6b00; }
+        body.dark-mode .edit-torrent-form { background: #1a1a2e; }
+        body.dark-mode .edit-torrent-form input, body.dark-mode .edit-torrent-form textarea, body.dark-mode .edit-torrent-form select {
+            background: #1a1a2e; color: #e0e0e0; border-color: #444;
+        }
+        body.dark-mode .vote-section button:hover { background: #333; }
+        body.dark-mode .vote-section .like-btn { color: #28a745; }
+        body.dark-mode .vote-section .dislike-btn { color: #dc3545; }
+        body.dark-mode .error-box { background: #2a1a1a; border-color: #dc3545; color: #ff6b6b; }
+
+        .header { background: #ff6b00; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; transition: background 0.3s; }
         .header h1 { color: #fff; font-size: 24px; }
         .header h1 a { color: #fff; text-decoration: none; }
         .nav { background: #2c2c2c; padding: 10px 20px; }
         .nav a { color: #ccc; text-decoration: none; margin-right: 20px; font-size: 14px; }
         .nav a:hover { color: #ff6b00; }
         .container { max-width: 900px; margin: 30px auto; padding: 0 20px; }
-        .torrent-detail { background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .torrent-detail { background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); transition: background 0.3s; }
         .torrent-detail h2 { color: #333; margin-bottom: 15px; word-break: break-word; }
         .torrent-detail .meta { color: #666; font-size: 14px; margin-bottom: 20px; display: flex; flex-wrap: wrap; gap: 15px; }
         .torrent-detail .meta span { margin-right: 20px; }
-        .torrent-detail .description { background: #f8f9fa; padding: 15px; border-radius: 4px; margin: 20px 0; line-height: 1.6; white-space: pre-wrap; word-break: break-word; }
+        .torrent-detail .description { background: #f8f9fa; padding: 15px; border-radius: 4px; margin: 20px 0; line-height: 1.6; white-space: pre-wrap; word-break: break-word; transition: background 0.3s; }
         .download-btn {
             display: inline-block;
             padding: 14px 40px;
@@ -45,15 +70,14 @@
         .error-box { background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; padding: 20px; border-radius: 4px; margin: 20px 0; }
         .loading { text-align: center; padding: 40px; color: #666; }
 
-        /* Comments */
         .comments-section { margin-top: 30px; }
         .comments-section h3 { border-bottom: 2px solid #ff6b00; padding-bottom: 10px; margin-bottom: 20px; }
-        .comment { padding: 12px; border-bottom: 1px solid #eee; }
+        .comment { padding: 12px; border-bottom: 1px solid #eee; transition: border-color 0.3s; }
         .comment .author { font-weight: 600; color: #333; }
         .comment .date { color: #999; font-size: 12px; margin-left: 10px; }
         .comment .content { margin-top: 5px; color: #555; word-break: break-word; }
         .comment .actions { margin-top: 8px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
-        .comment .actions button { background: none; border: none; cursor: pointer; font-size: 13px; color: #666; padding: 2px 8px; border-radius: 4px; }
+        .comment .actions button { background: none; border: none; cursor: pointer; font-size: 13px; color: #666; padding: 2px 8px; border-radius: 4px; transition: background 0.2s; }
         .comment .actions button:hover { background: #f0f0f0; }
         .comment .actions .edit-btn { color: #007bff; }
         .comment .actions .delete-btn { color: #dc3545; }
@@ -61,9 +85,9 @@
         .comment .actions .dislike-btn { color: #dc3545; }
         .comment .actions .vote-count { font-weight: 600; }
         .comment-form { margin-top: 20px; }
-        .comment-form textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; min-height: 80px; font-family: inherit; }
+        .comment-form textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; min-height: 80px; font-family: inherit; transition: background 0.3s, border-color 0.3s; }
         .comment-form textarea:focus { border-color: #ff6b00; outline: none; }
-        .btn { padding: 10px 24px; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; }
+        .btn { padding: 10px 24px; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; transition: background 0.2s; }
         .btn-orange { background: #ff6b00; color: #fff; }
         .btn-orange:hover { background: #e55f00; }
         .btn-gray { background: #6c757d; color: #fff; }
@@ -72,7 +96,6 @@
         .btn-danger:hover { background: #c82333; }
         .btn-sm { padding: 4px 12px; font-size: 12px; }
 
-        /* Vote buttons for torrent */
         .vote-section { display: flex; align-items: center; gap: 15px; margin: 15px 0; }
         .vote-section button { background: none; border: none; font-size: 24px; cursor: pointer; padding: 5px 10px; border-radius: 4px; transition: 0.2s; }
         .vote-section button:hover { background: #f0f0f0; }
@@ -83,11 +106,11 @@
         .vote-section .vote-score { font-size: 20px; font-weight: 700; min-width: 30px; text-align: center; }
         .vote-section .vote-stats { font-size: 14px; color: #666; }
 
-        /* Edit torrent */
-        .edit-torrent-form { background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0; display: none; }
+        .edit-torrent-form { background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0; display: none; transition: background 0.3s; }
         .edit-torrent-form.show { display: block; }
         .edit-torrent-form input, .edit-torrent-form textarea, .edit-torrent-form select {
             width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 10px; font-family: inherit;
+            transition: background 0.3s, border-color 0.3s;
         }
         .edit-torrent-form .btn-group { display: flex; gap: 10px; }
 
@@ -101,7 +124,7 @@
 </head>
 <body>
 
-    <div class="header">
+    <div class="header" id="mainHeader">
         <h1><a href="index.html">🔥 TorrentHub</a></h1>
     </div>
 
@@ -117,13 +140,73 @@
     </div>
 
     <script>
-        // ✅ API URL
         const API_URL = 'https://torrenthub-api.serafimkoragin-b12.workers.dev';
         let currentUser = null;
         let torrentId = null;
         let torrentData = null;
 
-        // ---------- Date Formatting ----------
+        // ---------- LOAD & APPLY SETTINGS ----------
+        function applySettings(settings) {
+            if (settings.theme_color) {
+                document.getElementById('mainHeader').style.background = settings.theme_color;
+            }
+            if (settings.bg_enabled && settings.bg_image) {
+                document.body.style.backgroundImage = `url(${settings.bg_image})`;
+                document.body.style.backgroundSize = 'cover';
+                document.body.style.backgroundAttachment = 'fixed';
+            } else {
+                document.body.style.backgroundImage = 'none';
+                document.body.style.background = '#e8e4e0';
+            }
+            document.body.style.transition = settings.animations ? 'all 0.3s ease' : 'none';
+            const darkMode = localStorage.getItem('torrenthub_darkmode') === 'true';
+            if (darkMode) {
+                document.body.classList.add('dark-mode');
+            } else {
+                document.body.classList.remove('dark-mode');
+            }
+        }
+
+        function applyLocalSettings() {
+            const themeColor = localStorage.getItem('torrenthub_theme') || '#ff6b00';
+            document.getElementById('mainHeader').style.background = themeColor;
+            const bg = localStorage.getItem('torrenthub_bg');
+            if (bg && bg !== 'none') {
+                document.body.style.backgroundImage = `url(${bg})`;
+                document.body.style.backgroundSize = 'cover';
+                document.body.style.backgroundAttachment = 'fixed';
+            } else {
+                document.body.style.backgroundImage = 'none';
+                document.body.style.background = '#e8e4e0';
+            }
+            const animations = localStorage.getItem('torrenthub_animations') !== 'false';
+            document.body.style.transition = animations ? 'all 0.3s ease' : 'none';
+            if (localStorage.getItem('torrenthub_darkmode') === 'true') {
+                document.body.classList.add('dark-mode');
+            } else {
+                document.body.classList.remove('dark-mode');
+            }
+        }
+
+        async function loadSettingsAndApply() {
+            const token = localStorage.getItem('torrenthub_token');
+            if (!token) return;
+            try {
+                const res = await fetch(`${API_URL}/api/auth/settings`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+                if (data.success) {
+                    applySettings(data.settings);
+                } else {
+                    applyLocalSettings();
+                }
+            } catch (e) {
+                applyLocalSettings();
+            }
+        }
+
+        // ---------- DATE FORMATTING ----------
         function getTimeFormat() {
             return localStorage.getItem('torrenthub_timeformat') || '12h';
         }
@@ -141,13 +224,13 @@
             return date.toLocaleDateString('en-US', options) + ', ' + timeStr;
         }
 
-        // ---------- Get torrent ID ----------
+        // ---------- GET TORRENT ID ----------
         function getTorrentId() {
             const params = new URLSearchParams(window.location.search);
             return params.get('id');
         }
 
-        // ---------- Load Torrent ----------
+        // ---------- LOAD TORRENT ----------
         async function loadTorrent() {
             const container = document.getElementById('mainContainer');
             torrentId = getTorrentId();
@@ -185,14 +268,13 @@
             }
         }
 
-        // ---------- Render Torrent ----------
+        // ---------- RENDER TORRENT ----------
         function renderTorrent(t) {
             const container = document.getElementById('mainContainer');
             const fileSize = formatFileSize(t.file_size || 0);
             const isOwner = currentUser && currentUser.id === t.uploader_id;
             const canEdit = isOwner || (currentUser && currentUser.role === 'admin');
 
-            // Vote counts
             const likes = t.likes || 0;
             const dislikes = t.dislikes || 0;
             const voteScore = t.vote_score || 0;
@@ -228,7 +310,6 @@
 
             const isLoggedIn = !!localStorage.getItem('torrenthub_token');
 
-            // ✅ Download buttons use FULL API_URL
             let downloadButtons = '';
             if (t.file_data && t.file_data.length > 0) {
                 downloadButtons += `
@@ -249,7 +330,6 @@
                 downloadButtons = '<p style="color:#999;">No download available for this torrent.</p>';
             }
 
-            // Format date
             const formattedDate = formatDate(t.created_at);
 
             container.innerHTML = `
@@ -328,7 +408,7 @@
             `;
         }
 
-        // ---------- Vote Torrent ----------
+        // ---------- VOTE TORRENT ----------
         async function voteTorrent(vote) {
             if (!currentUser) {
                 alert('Please log in to vote.');
@@ -355,7 +435,7 @@
             }
         }
 
-        // ---------- Vote Comment ----------
+        // ---------- VOTE COMMENT ----------
         async function voteComment(commentId, vote) {
             if (!currentUser) {
                 alert('Please log in to vote.');
@@ -382,15 +462,12 @@
             }
         }
 
-        // ---------- Toggle Edit Torrent ----------
+        // ---------- TORRENT EDIT ----------
         function toggleEditTorrent() {
             const form = document.getElementById('editTorrentForm');
-            if (form) {
-                form.classList.toggle('show');
-            }
+            if (form) form.classList.toggle('show');
         }
 
-        // ---------- Save Torrent Edit ----------
         async function saveTorrentEdit() {
             const title = document.getElementById('editTitle').value.trim();
             const category = document.getElementById('editCategory').value;
@@ -423,7 +500,6 @@
             }
         }
 
-        // ---------- Delete Torrent ----------
         async function deleteTorrent() {
             if (!confirm('⚠️ Are you sure you want to delete this torrent? This cannot be undone!')) return;
 
@@ -446,7 +522,7 @@
             }
         }
 
-        // ---------- Add Comment ----------
+        // ---------- ADD COMMENT ----------
         async function addComment() {
             const content = document.getElementById('commentContent').value.trim();
             if (!content) { alert('Please write something.'); return; }
@@ -476,7 +552,7 @@
             }
         }
 
-        // ---------- Edit Comment ----------
+        // ---------- EDIT COMMENT ----------
         function editComment(commentId) {
             const commentEl = document.getElementById(`comment-${commentId}`);
             if (!commentEl) return;
@@ -524,7 +600,7 @@
             }
         }
 
-        // ---------- Delete Comment ----------
+        // ---------- DELETE COMMENT ----------
         async function deleteComment(commentId) {
             if (!confirm('Delete this comment?')) return;
 
@@ -546,7 +622,7 @@
             }
         }
 
-        // ---------- Format File Size ----------
+        // ---------- FORMAT FILE SIZE ----------
         function formatFileSize(bytes) {
             if (!bytes || bytes === 0) return 'Unknown';
             const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
@@ -554,7 +630,8 @@
             return (bytes / Math.pow(1024, i)).toFixed(1) + ' ' + sizes[i];
         }
 
-        // ---------- Load ----------
+        // ---------- INIT ----------
+        loadSettingsAndApply();
         loadTorrent();
     </script>
 </body>
