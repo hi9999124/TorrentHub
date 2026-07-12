@@ -19,7 +19,8 @@
         body.dark-mode .dropdown-content a { color: #e0e0e0; }
         body.dark-mode .dropdown-content a:hover { background: #3a3a5e; }
         body.dark-mode .user-info { border-bottom-color: #444; color: #e0e0e0; }
-        body.dark-mode .message-input input { background: #1a1a2e; color: #e0e0e0; border-color: #444; }
+        body.dark-mode .message-input input, body.dark-mode .message-input textarea { background: #1a1a2e; color: #e0e0e0; border-color: #444; }
+        body.dark-mode .file-preview { background: #1a1a2e; border-color: #444; }
 
         .header { background: #ff6b00; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; transition: background 0.3s; }
         .header h1 { color: #fff; font-size: 24px; }
@@ -44,14 +45,25 @@
         .message-item { background: #fff; padding: 12px 15px; border-radius: 8px; margin-bottom: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
         .message-item .sender { font-weight: 600; }
         .message-item .time { font-size: 11px; color: #999; }
-        .message-item .content { margin-top: 4px; }
+        .message-item .content { margin-top: 4px; word-wrap: break-word; }
         .message-item.sent { background: #f0f7ff; border-left: 3px solid #ff6b00; }
+        .message-item .file-attachment { margin-top: 8px; padding: 8px; background: #f0f0f0; border-radius: 4px; display: inline-block; }
+        .message-item .file-attachment img { max-width: 200px; max-height: 150px; border-radius: 4px; }
+        .message-item .file-attachment a { color: #ff6b00; }
 
-        .message-input { display: flex; gap: 10px; margin-top: 15px; }
-        .message-input input { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; transition: border-color 0.2s; }
-        .message-input input:focus { border-color: #ff6b00; outline: none; }
-        .message-input button { padding: 10px 20px; background: #ff6b00; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; }
-        .message-input button:hover { background: #e55f00; }
+        .message-input { display: flex; flex-direction: column; gap: 10px; margin-top: 15px; }
+        .message-input .input-row { display: flex; gap: 10px; align-items: flex-end; }
+        .message-input textarea { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; resize: vertical; min-height: 60px; font-family: inherit; transition: border-color 0.2s; }
+        .message-input textarea:focus { border-color: #ff6b00; outline: none; }
+        .message-input .action-buttons { display: flex; gap: 8px; }
+        .message-input .action-buttons button { padding: 8px 12px; background: #ff6b00; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 14px; }
+        .message-input .action-buttons button:hover { background: #e55f00; }
+        .message-input .action-buttons .attach-btn { background: #6c757d; }
+        .message-input .action-buttons .attach-btn:hover { background: #5a6268; }
+        .file-preview { display: none; padding: 8px; background: #f8f9fa; border-radius: 4px; border: 1px solid #ddd; align-items: center; gap: 10px; }
+        .file-preview.show { display: flex; }
+        .file-preview .file-name { font-size: 13px; flex: 1; }
+        .file-preview .remove-file { color: #dc3545; cursor: pointer; font-weight: 600; background: none; border: none; }
 
         .btn { display: inline-block; padding: 8px 16px; background: #ff6b00; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; text-decoration: none; }
         .btn:hover { background: #e55f00; }
@@ -81,6 +93,7 @@
         body.dark-mode .tab-bar button.active { background: #ff6b00; color: #fff; }
 
         .new-message-btn { margin-bottom: 15px; }
+        #fileInput { display: none; }
     </style>
 </head>
 <body>
@@ -128,6 +141,7 @@
         let currentTab = 'inbox';
         let currentConversation = null;
         let currentUser = null;
+        let pendingFile = null;
 
         // ---------- SETTINGS ----------
         function applySettings(settings) {
@@ -372,21 +386,42 @@
                     const isSent = m.sender_id === (currentUser ? currentUser.id : -1);
                     const senderName = isSent ? 'You' : (m.sender_nickname || m.sender_username || 'Unknown');
                     const time = new Date(m.created_at).toLocaleString();
+                    let contentHtml = m.message;
+                    // Check if message contains a file (base64 image or file)
+                    if (m.message && m.message.startsWith('data:')) {
+                        const isImage = m.message.startsWith('data:image');
+                        if (isImage) {
+                            contentHtml = `<div class="file-attachment"><img src="${m.message}" alt="Shared image" /></div>`;
+                        } else {
+                            const fileName = 'shared_file';
+                            contentHtml = `<div class="file-attachment"><a href="${m.message}" download="${fileName}" target="_blank">📎 Download file</a></div>`;
+                        }
+                    }
                     html += `
                         <div class="message-item ${isSent ? 'sent' : ''}">
                             <div class="sender">${senderName} <span class="time">${time}</span></div>
-                            <div class="content">${m.message}</div>
+                            <div class="content">${contentHtml}</div>
                         </div>
                     `;
                 });
             }
             html += `</div>`;
 
-            // Message input
+            // Message input with file attachment
             html += `
                 <div class="message-input">
-                    <input type="text" id="messageInput" placeholder="Type a message..." />
-                    <button onclick="sendMessage(${otherUserId})">Send</button>
+                    <div class="file-preview" id="filePreview">
+                        <span class="file-name" id="fileName">No file selected</span>
+                        <button class="remove-file" onclick="removePendingFile()">✕</button>
+                    </div>
+                    <div class="input-row">
+                        <textarea id="messageInput" placeholder="Type a message..." rows="2"></textarea>
+                        <div class="action-buttons">
+                            <button class="attach-btn" onclick="document.getElementById('fileInput').click()">📎</button>
+                            <button onclick="sendMessage(${otherUserId})">Send</button>
+                        </div>
+                    </div>
+                    <input type="file" id="fileInput" accept="image/*,audio/*,video/*,.pdf,.zip,.txt" onchange="handleFileSelect(event)" />
                 </div>
             `;
 
@@ -398,22 +433,76 @@
                 scrollDiv.scrollTop = scrollDiv.scrollHeight;
             }
 
-            // Enter key
-            document.getElementById('messageInput').addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') sendMessage(otherUserId);
+            // Enter key (Ctrl+Enter to send)
+            document.getElementById('messageInput').addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage(otherUserId);
+                }
             });
+        }
+
+        // ---------- FILE HANDLING ----------
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            pendingFile = file;
+            const preview = document.getElementById('filePreview');
+            const fileNameEl = document.getElementById('fileName');
+            fileNameEl.textContent = file.name + ' (' + formatFileSize(file.size) + ')';
+            preview.classList.add('show');
+            // Clear input so same file can be re-selected
+            event.target.value = '';
+        }
+
+        function removePendingFile() {
+            pendingFile = null;
+            document.getElementById('filePreview').classList.remove('show');
+        }
+
+        function formatFileSize(bytes) {
+            if (!bytes) return '0 B';
+            const sizes = ['B', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(1024));
+            return (bytes / Math.pow(1024, i)).toFixed(1) + ' ' + sizes[i];
         }
 
         // ---------- SEND MESSAGE ----------
         async function sendMessage(receiverId) {
             const input = document.getElementById('messageInput');
-            const message = input.value.trim();
-            if (!message) return;
+            let message = input.value.trim();
+            const file = pendingFile;
+
+            if (!message && !file) {
+                alert('Please enter a message or attach a file.');
+                return;
+            }
 
             const token = localStorage.getItem('torrenthub_token');
             if (!token) {
                 alert('Please log in.');
                 return;
+            }
+
+            // If there's a file, convert to base64 and append as message (or send as a separate field)
+            if (file) {
+                try {
+                    const reader = new FileReader();
+                    const base64 = await new Promise((resolve) => {
+                        reader.onload = (e) => resolve(e.target.result);
+                        reader.readAsDataURL(file);
+                    });
+                    // If there's a text message, include it; otherwise just the file
+                    if (message) {
+                        message = message + '\n[File: ' + file.name + '] ' + base64;
+                    } else {
+                        message = base64;
+                    }
+                    removePendingFile();
+                } catch (err) {
+                    alert('Failed to read file: ' + err.message);
+                    return;
+                }
             }
 
             try {
