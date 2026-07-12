@@ -104,7 +104,6 @@
             .sidebar { flex: 1 1 100%; }
             .main { flex: 1 1 100%; }
             .messages-layout { flex-direction: column; }
-            .notif-dropdown { min-width: 300px; right: -10px; }
         }
     </style>
 </head>
@@ -155,6 +154,8 @@
         let currentConversation = null;
         let currentUser = null;
         let pendingFile = null;
+        let isSending = false;
+        let lastMessageTime = 0;
 
         // ---------- SETTINGS ----------
         function applySettings(settings) {
@@ -319,7 +320,9 @@
 
             if (!messages || messages.length === 0) {
                 container.innerHTML = `<div class="empty">No messages.</div>`;
-                document.getElementById('messageView').innerHTML = `<div class="empty">Select a conversation to view messages.</div>`;
+                if (!currentConversation) {
+                    document.getElementById('messageView').innerHTML = `<div class="empty">Select a conversation to view messages.</div>`;
+                }
                 return;
             }
 
@@ -327,12 +330,10 @@
             messages.forEach(m => {
                 const otherId = currentTab === 'inbox' ? m.sender_id : m.receiver_id;
                 const otherName = currentTab === 'inbox' ? m.nickname || m.username : m.nickname || m.username;
-                const avatar = m.avatar_url || '';
                 if (!conversations[otherId]) {
                     conversations[otherId] = {
                         id: otherId,
                         name: otherName,
-                        avatar: avatar,
                         lastMessage: m.message,
                         lastTime: m.created_at,
                         unread: m.read === 0
@@ -366,6 +367,7 @@
 
         // ---------- LOAD CONVERSATION ----------
         async function loadConversation(otherUserId) {
+            if (isSending) return; // Don't reload while sending
             currentConversation = otherUserId;
             const container = document.getElementById('messageView');
             const token = localStorage.getItem('torrenthub_token');
@@ -510,6 +512,8 @@
                 }
             }
 
+            isSending = true;
+
             try {
                 const res = await fetch(`${API_URL}/api/messages`, {
                     method: 'POST',
@@ -526,11 +530,18 @@
                 const data = await res.json();
                 if (data.success) {
                     input.value = '';
-                    loadConversation(receiverId);
+                    lastMessageTime = Date.now();
+                    // Reload conversation after a small delay
+                    setTimeout(() => {
+                        isSending = false;
+                        loadConversation(receiverId);
+                    }, 300);
                 } else {
+                    isSending = false;
                     alert('Failed to send: ' + data.error);
                 }
             } catch (err) {
+                isSending = false;
                 alert('Network error: ' + err.message);
             }
         }
@@ -549,8 +560,11 @@
             }
         }
 
-        // ---------- POLLING ----------
+        // ---------- POLLING (with cooldown) ----------
         function checkNewMessages() {
+            // Don't poll if we just sent a message (within 3 seconds)
+            if (Date.now() - lastMessageTime < 3000) return;
+            if (isSending) return;
             if (currentConversation) {
                 loadConversation(currentConversation);
             }
@@ -562,13 +576,14 @@
         checkLogin();
         loadConversations();
 
-        setInterval(checkNewMessages, 15000);
+        // Poll every 10 seconds, but with cooldown
+        setInterval(checkNewMessages, 10000);
 
         const params = new URLSearchParams(window.location.search);
         if (params.get('to')) {
             setTimeout(() => {
                 loadConversation(parseInt(params.get('to')));
-            }, 1000);
+            }, 500);
         }
     </script>
 </body>
