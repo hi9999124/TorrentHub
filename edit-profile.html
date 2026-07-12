@@ -21,6 +21,7 @@
         }
         body.dark-mode .avatar-preview { border-color: #444; }
         body.dark-mode .cover-preview { border-color: #444; }
+        body.dark-mode .toggle-label { color: #ccc; }
 
         .header { background: #ff6b00; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; transition: background 0.3s; }
         .header h1 { color: #fff; font-size: 24px; }
@@ -49,6 +50,47 @@
         .btn-group { display: flex; gap: 15px; flex-wrap: wrap; margin-top: 10px; }
         .error { color: #dc3545; display: none; margin-top: 10px; }
         .success { color: #28a745; display: none; margin-top: 10px; }
+
+        /* Toggle switch */
+        .toggle-switch {
+            position: relative;
+            width: 50px;
+            height: 26px;
+            background: #ccc;
+            border-radius: 13px;
+            cursor: pointer;
+            transition: background 0.3s;
+            flex-shrink: 0;
+        }
+        .toggle-switch.active { background: #28a745; }
+        .toggle-switch .slider {
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 20px;
+            height: 20px;
+            background: #fff;
+            border-radius: 50%;
+            transition: left 0.3s;
+        }
+        .toggle-switch.active .slider { left: 27px; }
+        .toggle-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 0;
+        }
+        .toggle-row label {
+            font-weight: 600;
+            font-size: 14px;
+            color: #555;
+        }
+        .toggle-row .hint {
+            font-size: 12px;
+            color: #888;
+            margin-left: 10px;
+        }
+
         .user-panel { display: flex; gap: 10px; align-items: center; }
         .user-panel a { background: #fff; color: #ff6b00; padding: 8px 16px; border-radius: 4px; text-decoration: none; font-weight: 600; }
         .user-panel a:hover { background: #f0f0f0; }
@@ -124,18 +166,36 @@
                 </div>
 
                 <div class="form-group">
-                    <label>Avatar URL</label>
-                    <input type="url" id="avatar_url" placeholder="https://example.com/avatar.jpg" />
+                    <label>Avatar URL (supports GIF)</label>
+                    <input type="url" id="avatar_url" placeholder="https://example.com/avatar.gif" />
                     <div class="avatar-preview" id="avatarPreview">
                         <div style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;color:#888;font-size:12px;">No avatar</div>
                     </div>
+                    <div class="hint">Use any image URL, including animated GIFs</div>
                 </div>
 
                 <div class="form-group">
-                    <label>Cover Image URL</label>
-                    <input type="url" id="cover_image" placeholder="https://example.com/cover.jpg" />
+                    <label>Cover Image URL (supports GIF)</label>
+                    <input type="url" id="cover_image" placeholder="https://example.com/cover.gif" />
                     <div class="cover-preview" id="coverPreview">
                         <span>No cover image</span>
+                    </div>
+                    <div class="hint">Use any image URL, including animated GIFs</div>
+                </div>
+
+                <div class="form-group" style="border-top:2px solid #eee; padding-top:15px;">
+                    <h4 style="margin-bottom:10px;">🔐 Privacy Settings</h4>
+                    <div class="toggle-row">
+                        <label>Allow others to message you</label>
+                        <div class="toggle-switch active" id="allowMessagesToggle">
+                            <div class="slider"></div>
+                        </div>
+                    </div>
+                    <div class="toggle-row">
+                        <label>Do Not Disturb (hide online status)</label>
+                        <div class="toggle-switch" id="dndToggle">
+                            <div class="slider"></div>
+                        </div>
                     </div>
                 </div>
 
@@ -298,6 +358,22 @@
                 document.getElementById('avatar_url').value = user.avatar_url || '';
                 document.getElementById('cover_image').value = user.cover_image || '';
                 updatePreviews();
+
+                // Toggles
+                const allowMessages = user.allow_messages !== undefined ? user.allow_messages : 1;
+                const dnd = user.dnd || 0;
+                const allowToggle = document.getElementById('allowMessagesToggle');
+                const dndToggle = document.getElementById('dndToggle');
+                if (allowMessages === 1) {
+                    allowToggle.classList.add('active');
+                } else {
+                    allowToggle.classList.remove('active');
+                }
+                if (dnd === 1) {
+                    dndToggle.classList.add('active');
+                } else {
+                    dndToggle.classList.remove('active');
+                }
             } catch (err) {
                 console.error('Load user error:', err);
             }
@@ -325,6 +401,17 @@
         document.getElementById('avatar_url').addEventListener('input', updatePreviews);
         document.getElementById('cover_image').addEventListener('input', updatePreviews);
 
+        // ---------- TOGGLES ----------
+        function toggleSwitch(el) {
+            el.classList.toggle('active');
+        }
+        document.getElementById('allowMessagesToggle').addEventListener('click', function() {
+            toggleSwitch(this);
+        });
+        document.getElementById('dndToggle').addEventListener('click', function() {
+            toggleSwitch(this);
+        });
+
         // ---------- SAVE PROFILE ----------
         document.getElementById('profileForm').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -340,6 +427,9 @@
                 return;
             }
 
+            const allowMessages = document.getElementById('allowMessagesToggle').classList.contains('active') ? 1 : 0;
+            const dnd = document.getElementById('dndToggle').classList.contains('active') ? 1 : 0;
+
             const payload = {
                 nickname: document.getElementById('nickname').value.trim(),
                 email: document.getElementById('email').value.trim(),
@@ -349,7 +439,9 @@
                 twitter: document.getElementById('twitter').value.trim(),
                 github: document.getElementById('github').value.trim(),
                 avatar_url: document.getElementById('avatar_url').value.trim(),
-                cover_image: document.getElementById('cover_image').value.trim()
+                cover_image: document.getElementById('cover_image').value.trim(),
+                allow_messages: allowMessages,
+                dnd: dnd
             };
 
             try {
