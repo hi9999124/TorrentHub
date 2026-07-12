@@ -91,7 +91,7 @@
             position: absolute;
             right: 0;
             background: #fff;
-            min-width: 200px;
+            min-width: 220px;
             box-shadow: 0 8px 16px rgba(0,0,0,0.2);
             border-radius: 8px;
             z-index: 100;
@@ -305,6 +305,8 @@
                 width: auto;
                 text-align: left;
             }
+            .nav { gap: 10px; }
+            .nav a { font-size: 12px; }
         }
     </style>
 </head>
@@ -322,11 +324,12 @@
         <a href="index.html" class="active">Home</a>
         <a href="forum.html">Forum</a>
         <a href="upload.html">📤 Upload</a>
-        <a href="#">Categories</a>
         <a href="top100.html">🏆 Top 100</a>
         <a href="users.html">👥 Users</a>
+        <a href="search.html">🔍 Search</a>
         <a href="#">Rules</a>
         <a href="#">Help</a>
+        <a href="admin/" style="color:#ff4444;">🛡️ Admin</a>
     </div>
 
     <div class="search-bar">
@@ -355,6 +358,7 @@
 
     <script>
         const API_URL = 'https://torrenthub-api.serafimkoragin-b12.workers.dev';
+        const WS_URL = 'wss://torrenthub-api.serafimkoragin-b12.workers.dev';
 
         // ---------- LOAD & APPLY SETTINGS ----------
         function applySettings(settings) {
@@ -457,17 +461,50 @@
                     return;
                 }
 
+                // Check unread notifications
+                let notifBadge = '';
+                try {
+                    const nRes = await fetch(`${API_URL}/api/notifications?limit=1&unread=true`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    const nData = await nRes.json();
+                    if (nData.unreadCount > 0) {
+                        notifBadge = `<span style="background:#dc3545;color:#fff;border-radius:50%;padding:1px 6px;font-size:10px;margin-left:5px;">${nData.unreadCount}</span>`;
+                    }
+                } catch (e) {}
+
+                // Check unread messages
+                let msgBadge = '';
+                try {
+                    const mRes = await fetch(`${API_URL}/api/messages/unread-count`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    const mData = await mRes.json();
+                    if (mData.count > 0) {
+                        msgBadge = `<span style="background:#dc3545;color:#fff;border-radius:50%;padding:1px 6px;font-size:10px;margin-left:5px;">${mData.count}</span>`;
+                    }
+                } catch (e) {}
+
+                const isAdmin = data.user.role === 'admin' || data.user.role === 'moderator';
+
                 userPanel.innerHTML = `
                     <div class="user-dropdown">
                         <button class="user-dropdown-btn">👤 ${data.user.nickname}</button>
                         <div class="user-dropdown-content">
                             <div class="user-info">⭐ ${data.user.reputation || 0} pts</div>
                             <a href="account.html">👤 My Account</a>
+                            <a href="profile.html?id=${data.user.id}">📋 My Profile</a>
+                            <a href="edit-profile.html">✏️ Edit Profile</a>
                             <a href="upload.html">📤 Upload</a>
                             <a href="forum.html">📚 Forum</a>
                             <a href="top100.html">🏆 Top 100</a>
                             <a href="users.html">👥 Users</a>
+                            <a href="search.html">🔍 Search</a>
+                            <a href="notifications.html">🔔 Notifications ${notifBadge}</a>
+                            <a href="messages.html">💬 Messages ${msgBadge}</a>
+                            <a href="badges.html">🏅 Badges</a>
                             <a href="settings.html">⚙️ Settings</a>
+                            ${isAdmin ? `<a href="admin/" style="color:#ff4444;">🛡️ Admin Panel</a>` : ''}
                             <a href="#" onclick="logout()">🚪 Log Out</a>
                         </div>
                     </div>
@@ -517,7 +554,7 @@
                                 <span>📦 ${fileSize}</span>
                                 <span class="seeders">🟢 ${seeders}</span>
                                 <span class="leechers">🔴 ${leechers}</span>
-                                <span>👤 ${t.nickname || t.username}</span>
+                                <span>👤 <a href="profile.html?id=${t.uploader_id}" style="color:#666;text-decoration:none;">${t.nickname || t.username}</a></span>
                                 <a href="/api/torrents/${t.id}/download" class="download-btn-small" target="_blank">
                                     ⬇️ Download
                                 </a>
@@ -550,45 +587,7 @@
         function searchTorrents() {
             const query = document.getElementById('searchInput').value.trim();
             if (!query) { loadTorrents(); return; }
-            const container = document.getElementById('torrentsContainer');
-            container.innerHTML = '<div style="text-align:center;padding:40px;color:#666;">🔍 Searching...</div>';
-
-            fetch(`${API_URL}/api/torrents/search?q=${encodeURIComponent(query)}`)
-                .then(r => r.json())
-                .then(data => {
-                    if (!data.success || !data.torrents || data.torrents.length === 0) {
-                        container.innerHTML = `
-                            <div class="empty-state">
-                                <h2>🔍 No results found</h2>
-                                <p>Try a different search term.</p>
-                            </div>
-                        `;
-                        return;
-                    }
-                    let html = '';
-                    data.torrents.forEach(t => {
-                        const fileSize = formatFileSize(t.file_size || 0);
-                        html += `
-                            <div class="torrent-row">
-                                <div class="title">
-                                    <span class="category-tag">${t.category || 'General'}</span>
-                                    <a href="torrent.html?id=${t.id}">${t.title}</a>
-                                </div>
-                                <div class="meta">
-                                    <span>📦 ${fileSize}</span>
-                                    <span class="seeders">🟢 ${t.seeders || 0}</span>
-                                    <span class="leechers">🔴 ${t.leechers || 0}</span>
-                                    <span>👤 ${t.nickname || t.username}</span>
-                                    <a href="/api/torrents/${t.id}/download" class="download-btn-small" target="_blank">
-                                        ⬇️ Download
-                                    </a>
-                                </div>
-                            </div>
-                        `;
-                    });
-                    container.innerHTML = html;
-                })
-                .catch(() => loadTorrents());
+            window.location.href = `search.html?q=${encodeURIComponent(query)}&type=torrents`;
         }
 
         document.getElementById('searchInput').addEventListener('keypress', function(e) {
