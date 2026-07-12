@@ -14,13 +14,77 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: #e8e4e0;
             color: #333;
+            transition: all 0.3s ease;
         }
+        body.dark-mode {
+            background: #1a1a2e;
+            color: #e0e0e0;
+        }
+        body.dark-mode .account-box {
+            background: #2a2a3e;
+            color: #e0e0e0;
+        }
+        body.dark-mode .account-box h3 {
+            color: #e0e0e0;
+            border-bottom-color: #ff6b00;
+        }
+        body.dark-mode .info-row {
+            border-bottom-color: #444;
+        }
+        body.dark-mode .info-row label {
+            color: #ccc;
+        }
+        body.dark-mode .info-row span {
+            color: #e0e0e0;
+        }
+        body.dark-mode .nav {
+            background: #16162a;
+        }
+        body.dark-mode .nav a {
+            color: #aaa;
+        }
+        body.dark-mode .nav a:hover {
+            color: #ff6b00;
+        }
+        body.dark-mode .warning-box {
+            background: #2a1a1a;
+            border-color: #dc3545;
+            color: #ff6b6b;
+        }
+        body.dark-mode .modal-box {
+            background: #2a2a3e;
+            color: #e0e0e0;
+        }
+        body.dark-mode .modal-box h3 {
+            color: #e0e0e0;
+            border-bottom-color: #ff6b00;
+        }
+        body.dark-mode .modal-box .input-group label {
+            color: #ccc;
+        }
+        body.dark-mode .modal-box .input-group input {
+            background: #1a1a2e;
+            color: #e0e0e0;
+            border-color: #444;
+        }
+        body.dark-mode .modal-box .input-group input:focus {
+            border-color: #ff6b00;
+        }
+        body.dark-mode .alt-account {
+            background: #1a1a2e;
+            border-color: #444;
+        }
+        body.dark-mode .alt-account strong {
+            color: #e0e0e0;
+        }
+
         .header {
             background: #ff6b00;
             padding: 15px 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            transition: background 0.3s;
         }
         .header h1 {
             color: #fff;
@@ -54,6 +118,7 @@
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
             margin-bottom: 20px;
+            transition: background 0.3s;
         }
         .account-box h3 {
             color: #333;
@@ -83,7 +148,6 @@
             margin-right: 10px;
             margin-top: 15px;
             transition: background 0.2s;
-            display: inline-block;
         }
         .btn-orange {
             background: #ff6b00;
@@ -160,8 +224,6 @@
         .warning-box.active {
             display: block;
         }
-
-        /* Modal Styles */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -239,7 +301,7 @@
 </head>
 <body>
 
-    <div class="header">
+    <div class="header" id="mainHeader">
         <h1><a href="index.html">🔥 TorrentHub</a></h1>
     </div>
 
@@ -318,9 +380,73 @@
     <script>
         const API_URL = 'https://torrenthub-api.serafimkoragin-b12.workers.dev';
         let currentUser = null;
-        let altAccounts = [];
 
-        // ---------- Load Account ----------
+        // ---------- LOAD & APPLY SETTINGS ----------
+        function applySettings(settings) {
+            // Theme color
+            if (settings.theme_color) {
+                document.getElementById('mainHeader').style.background = settings.theme_color;
+            }
+            // Background
+            if (settings.bg_enabled && settings.bg_image) {
+                document.body.style.backgroundImage = `url(${settings.bg_image})`;
+                document.body.style.backgroundSize = 'cover';
+                document.body.style.backgroundAttachment = 'fixed';
+            } else {
+                document.body.style.backgroundImage = 'none';
+                document.body.style.background = '#e8e4e0';
+            }
+            // Animations
+            document.body.style.transition = settings.animations ? 'all 0.3s ease' : 'none';
+            // Dark mode
+            const darkMode = localStorage.getItem('torrenthub_darkmode') === 'true';
+            if (darkMode) {
+                document.body.classList.add('dark-mode');
+            } else {
+                document.body.classList.remove('dark-mode');
+            }
+        }
+
+        function applyLocalSettings() {
+            const themeColor = localStorage.getItem('torrenthub_theme') || '#ff6b00';
+            document.getElementById('mainHeader').style.background = themeColor;
+            const bg = localStorage.getItem('torrenthub_bg');
+            if (bg && bg !== 'none') {
+                document.body.style.backgroundImage = `url(${bg})`;
+                document.body.style.backgroundSize = 'cover';
+                document.body.style.backgroundAttachment = 'fixed';
+            } else {
+                document.body.style.backgroundImage = 'none';
+                document.body.style.background = '#e8e4e0';
+            }
+            const animations = localStorage.getItem('torrenthub_animations') !== 'false';
+            document.body.style.transition = animations ? 'all 0.3s ease' : 'none';
+            if (localStorage.getItem('torrenthub_darkmode') === 'true') {
+                document.body.classList.add('dark-mode');
+            } else {
+                document.body.classList.remove('dark-mode');
+            }
+        }
+
+        async function loadSettingsAndApply() {
+            const token = localStorage.getItem('torrenthub_token');
+            if (!token) return;
+            try {
+                const res = await fetch(`${API_URL}/api/auth/settings`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+                if (data.success) {
+                    applySettings(data.settings);
+                } else {
+                    applyLocalSettings();
+                }
+            } catch (e) {
+                applyLocalSettings();
+            }
+        }
+
+        // ---------- LOAD ACCOUNT ----------
         async function loadAccount() {
             const container = document.getElementById('mainContainer');
             const token = localStorage.getItem('torrenthub_token');
@@ -361,7 +487,6 @@
         function renderProfile(user) {
             const container = document.getElementById('mainContainer');
 
-            // Sample alt accounts (will be replaced with real data later)
             const altAccountsHtml = `
                 <div class="alt-account">
                     <div><strong>${user.username}_alt1</strong> <span style="color:#999;font-size:12px;">(Uploader)</span></div>
@@ -416,7 +541,7 @@
             `;
         }
 
-        // ---------- Edit Profile ----------
+        // ---------- EDIT PROFILE ----------
         function openEditProfile() {
             if (!currentUser) return;
             document.getElementById('editNickname').value = currentUser.nickname;
@@ -487,7 +612,7 @@
             btn.textContent = 'Save Changes';
         }
 
-        // ---------- Change Password ----------
+        // ---------- CHANGE PASSWORD ----------
         function openChangePassword() {
             document.getElementById('currentPassword').value = '';
             document.getElementById('newPassword').value = '';
@@ -575,7 +700,7 @@
             btn.textContent = 'Change Password';
         }
 
-        // ---------- Alt Accounts ----------
+        // ---------- ALT ACCOUNTS ----------
         function openAltAccount() {
             document.getElementById('altUsername').value = '';
             document.getElementById('altNickname').value = '';
@@ -604,7 +729,6 @@
                 return;
             }
 
-            // For now, just show success (backend will be added later)
             alert(`✅ Alt account "${username}" created! (Coming soon with full backend support)`);
             closeModal('altAccountModal');
             btn.disabled = false;
@@ -617,7 +741,7 @@
             }
         }
 
-        // ---------- Delete Account ----------
+        // ---------- DELETE ACCOUNT ----------
         function toggleDeleteWarning() {
             document.getElementById('deleteWarning').classList.toggle('active');
         }
@@ -633,7 +757,7 @@
             }
         }
 
-        // ---------- Modal Helpers ----------
+        // ---------- MODAL HELPERS ----------
         function closeModal(id) {
             document.getElementById(id).classList.remove('active');
         }
@@ -644,7 +768,7 @@
             }
         };
 
-        // ---------- Logout ----------
+        // ---------- LOGOUT ----------
         function logout() {
             const token = localStorage.getItem('torrenthub_token');
             if (token) {
@@ -658,9 +782,9 @@
             window.location.href = 'index.html';
         }
 
-        // ---------- Load ----------
+        // ---------- INIT ----------
+        loadSettingsAndApply();
         loadAccount();
     </script>
-
 </body>
 </html>
