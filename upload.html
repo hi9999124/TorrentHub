@@ -14,13 +14,79 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: #e8e4e0;
             color: #333;
+            transition: all 0.3s ease;
         }
+        body.dark-mode {
+            background: #1a1a2e;
+            color: #e0e0e0;
+        }
+        body.dark-mode .upload-box {
+            background: #2a2a3e;
+            color: #e0e0e0;
+        }
+        body.dark-mode .upload-box h2 {
+            color: #e0e0e0;
+            border-bottom-color: #ff6b00;
+        }
+        body.dark-mode .input-group label {
+            color: #ccc;
+        }
+        body.dark-mode .input-group input,
+        body.dark-mode .input-group select,
+        body.dark-mode .input-group textarea {
+            background: #1a1a2e;
+            color: #e0e0e0;
+            border-color: #444;
+        }
+        body.dark-mode .input-group input:focus,
+        body.dark-mode .input-group select:focus,
+        body.dark-mode .input-group textarea:focus {
+            border-color: #ff6b00;
+        }
+        body.dark-mode .nav {
+            background: #16162a;
+        }
+        body.dark-mode .nav a {
+            color: #aaa;
+        }
+        body.dark-mode .nav a:hover {
+            color: #ff6b00;
+        }
+        body.dark-mode .info-box {
+            background: #1a1a2e;
+            border-left-color: #ff6b00;
+            color: #e0e0e0;
+        }
+        body.dark-mode .info-box p {
+            color: #ccc;
+        }
+        body.dark-mode .drop-zone {
+            background: #1a1a2e;
+            border-color: #444;
+        }
+        body.dark-mode .drop-zone:hover {
+            background: #2a2a4e;
+            border-color: #ff6b00;
+        }
+        body.dark-mode .file-preview {
+            background: #1a1a3e;
+            border-left-color: #28a745;
+        }
+        body.dark-mode .file-preview .name {
+            color: #e0e0e0;
+        }
+        body.dark-mode .file-info {
+            background: #1a1a2e;
+            color: #aaa;
+        }
+
         .header {
             background: #ff6b00;
             padding: 15px 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            transition: background 0.3s;
         }
         .header h1 {
             color: #fff;
@@ -56,6 +122,7 @@
             padding: 30px;
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            transition: background 0.3s;
         }
         .upload-box h2 {
             color: #333;
@@ -82,6 +149,7 @@
             border-radius: 4px;
             font-size: 14px;
             font-family: inherit;
+            transition: border-color 0.2s;
         }
         .input-group textarea {
             resize: vertical;
@@ -100,6 +168,7 @@
             cursor: pointer;
             font-weight: 600;
             font-size: 16px;
+            transition: background 0.2s;
         }
         .btn-orange {
             background: #ff6b00;
@@ -114,13 +183,6 @@
         }
         .btn-gray:hover {
             background: #5a6268;
-        }
-        .btn-green {
-            background: #28a745;
-            color: #fff;
-        }
-        .btn-green:hover {
-            background: #218838;
         }
         .error-text {
             color: #dc3545;
@@ -147,8 +209,8 @@
             margin-top: 5px;
             font-size: 13px;
             color: #666;
+            transition: background 0.3s;
         }
-
         .drop-zone {
             border: 3px dashed #ddd;
             border-radius: 8px;
@@ -190,6 +252,7 @@
             border-radius: 8px;
             margin-bottom: 15px;
             border-left: 4px solid #28a745;
+            transition: background 0.3s;
         }
         .file-preview .name {
             font-weight: 600;
@@ -249,6 +312,7 @@
             border-radius: 8px;
             margin-bottom: 20px;
             border-left: 4px solid #ff6b00;
+            transition: background 0.3s;
         }
         @media (max-width: 600px) {
             .upload-methods button {
@@ -264,7 +328,7 @@
 </head>
 <body>
 
-    <div class="header">
+    <div class="header" id="mainHeader">
         <h1><a href="index.html">🔥 TorrentHub</a></h1>
         <div class="user-panel" id="userPanel">
             <a href="login.html">Log In</a>
@@ -380,7 +444,68 @@
         let selectedFile = null;
         let currentMethod = 'file';
 
-        // ---------- Check Login ----------
+        // ---------- LOAD & APPLY SETTINGS ----------
+        function applySettings(settings) {
+            if (settings.theme_color) {
+                document.getElementById('mainHeader').style.background = settings.theme_color;
+            }
+            if (settings.bg_enabled && settings.bg_image) {
+                document.body.style.backgroundImage = `url(${settings.bg_image})`;
+                document.body.style.backgroundSize = 'cover';
+                document.body.style.backgroundAttachment = 'fixed';
+            } else {
+                document.body.style.backgroundImage = 'none';
+                document.body.style.background = '#e8e4e0';
+            }
+            document.body.style.transition = settings.animations ? 'all 0.3s ease' : 'none';
+            const darkMode = localStorage.getItem('torrenthub_darkmode') === 'true';
+            if (darkMode) {
+                document.body.classList.add('dark-mode');
+            } else {
+                document.body.classList.remove('dark-mode');
+            }
+        }
+
+        function applyLocalSettings() {
+            const themeColor = localStorage.getItem('torrenthub_theme') || '#ff6b00';
+            document.getElementById('mainHeader').style.background = themeColor;
+            const bg = localStorage.getItem('torrenthub_bg');
+            if (bg && bg !== 'none') {
+                document.body.style.backgroundImage = `url(${bg})`;
+                document.body.style.backgroundSize = 'cover';
+                document.body.style.backgroundAttachment = 'fixed';
+            } else {
+                document.body.style.backgroundImage = 'none';
+                document.body.style.background = '#e8e4e0';
+            }
+            const animations = localStorage.getItem('torrenthub_animations') !== 'false';
+            document.body.style.transition = animations ? 'all 0.3s ease' : 'none';
+            if (localStorage.getItem('torrenthub_darkmode') === 'true') {
+                document.body.classList.add('dark-mode');
+            } else {
+                document.body.classList.remove('dark-mode');
+            }
+        }
+
+        async function loadSettingsAndApply() {
+            const token = localStorage.getItem('torrenthub_token');
+            if (!token) return;
+            try {
+                const res = await fetch(`${API_URL}/api/auth/settings`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+                if (data.success) {
+                    applySettings(data.settings);
+                } else {
+                    applyLocalSettings();
+                }
+            } catch (e) {
+                applyLocalSettings();
+            }
+        }
+
+        // ---------- CHECK LOGIN ----------
         async function checkLogin() {
             const token = localStorage.getItem('torrenthub_token');
             const userPanel = document.getElementById('userPanel');
@@ -438,7 +563,7 @@
             }
         }
 
-        // ---------- Switch Upload Method ----------
+        // ---------- SWITCH METHOD ----------
         function switchMethod(method) {
             currentMethod = method;
             document.querySelectorAll('.upload-methods button').forEach(b => b.classList.remove('active'));
@@ -453,7 +578,7 @@
             }
         }
 
-        // ---------- Drag & Drop ----------
+        // ---------- DRAG & DROP ----------
         const dropZone = document.getElementById('dropZone');
         const fileInput = document.getElementById('fileInput');
 
@@ -476,7 +601,7 @@
             }
         });
 
-        // ---------- File Input ----------
+        // ---------- FILE INPUT ----------
         function handleFileSelect(event) {
             if (event.target.files.length > 0) {
                 selectedFile = event.target.files[0];
@@ -485,7 +610,7 @@
             }
         }
 
-        // ---------- Paste from Clipboard ----------
+        // ---------- PASTE FROM CLIPBOARD ----------
         document.addEventListener('paste', (e) => {
             const items = e.clipboardData.items;
             for (let item of items) {
@@ -499,7 +624,7 @@
             }
         });
 
-        // ---------- Show File Preview ----------
+        // ---------- SHOW FILE PREVIEW ----------
         function showFilePreview(file) {
             const container = document.getElementById('filePreviewContainer');
             const size = formatFileSize(file.size);
@@ -547,7 +672,7 @@
             return (bytes / Math.pow(1024, i)).toFixed(1) + ' ' + sizes[i];
         }
 
-        // ---------- Reset Form ----------
+        // ---------- RESET FORM ----------
         function resetForm() {
             removeFile();
             document.getElementById('title').value = '';
@@ -560,7 +685,7 @@
             switchMethod('file');
         }
 
-        // ---------- Upload ----------
+        // ---------- UPLOAD ----------
         async function uploadTorrent(event) {
             event.preventDefault();
 
@@ -599,19 +724,15 @@
             formData.append('category', category);
             formData.append('description', description);
 
-            // Check which method is active
             if (currentMethod === 'file' && selectedFile) {
-                // File upload mode — send the file
                 formData.append('file', selectedFile);
                 formData.append('file_size', selectedFile.size);
             } else {
-                // Magnet link mode
                 const magnetLink = document.getElementById('magnetLink').value.trim();
                 const fileSize = document.getElementById('fileSizeMagnet').value.trim();
                 if (magnetLink) {
                     formData.append('magnet_link', magnetLink);
                 } else if (selectedFile) {
-                    // If user has a file selected but is in magnet mode, warn them
                     errorEl.textContent = '⚠️ You have a file selected but you are in "Magnet Link" mode. Switch to "File Upload" mode or remove the file.';
                     errorEl.classList.add('active');
                     btn.disabled = false;
@@ -665,7 +786,7 @@
             btn.textContent = '📤 Upload';
         }
 
-        // ---------- Logout ----------
+        // ---------- LOGOUT ----------
         function logout() {
             const token = localStorage.getItem('torrenthub_token');
             if (token) {
@@ -679,6 +800,8 @@
             window.location.href = 'index.html';
         }
 
+        // ---------- INIT ----------
+        loadSettingsAndApply();
         checkLogin();
     </script>
 </body>
