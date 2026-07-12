@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Torrent Details - TorrentHub</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #e8e4e0; color: #333; }
+        .header { background: #ff6b00; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; }
+        .header h1 { color: #fff; font-size: 24px; }
+        .header h1 a { color: #fff; text-decoration: none; }
+        .nav { background: #2c2c2c; padding: 10px 20px; }
+        .nav a { color: #ccc; text-decoration: none; margin-right: 20px; font-size: 14px; }
+        .nav a:hover { color: #ff6b00; }
+        .container { max-width: 900px; margin: 30px auto; padding: 0 20px; }
+        .torrent-detail { background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .torrent-detail h2 { color: #333; margin-bottom: 15px; }
+        .torrent-detail .meta { color: #666; font-size: 14px; margin-bottom: 20px; }
+        .torrent-detail .meta span { margin-right: 20px; }
+        .torrent-detail .description { background: #f8f9fa; padding: 15px; border-radius: 4px; margin: 20px 0; line-height: 1.6; }
+        .download-btn {
+            display: inline-block;
+            padding: 14px 40px;
+            background: #28a745;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 20px;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background 0.2s, transform 0.1s;
+            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+        }
+        .download-btn:hover {
+            background: #218838;
+            transform: scale(1.02);
+        }
+        .download-btn:active {
+            transform: scale(0.98);
+        }
+        .download-btn .sub {
+            display: block;
+            font-size: 12px;
+            font-weight: 400;
+            opacity: 0.8;
+        }
+        .no-ads-badge {
+            display: inline-block;
+            background: #28a745;
+            color: #fff;
+            padding: 2px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+        .back-link { display: inline-block; margin-top: 20px; color: #ff6b00; text-decoration: none; }
+        .back-link:hover { text-decoration: underline; }
+        .error-box { background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; padding: 20px; border-radius: 4px; margin: 20px 0; }
+        .loading { text-align: center; padding: 40px; color: #666; }
+
+        /* Comments */
+        .comments-section { margin-top: 30px; }
+        .comments-section h3 { border-bottom: 2px solid #ff6b00; padding-bottom: 10px; margin-bottom: 20px; }
+        .comment { padding: 12px; border-bottom: 1px solid #eee; }
+        .comment .author { font-weight: 600; color: #333; }
+        .comment .date { color: #999; font-size: 12px; margin-left: 10px; }
+        .comment .content { margin-top: 5px; color: #555; }
+        .comment-form { margin-top: 20px; }
+        .comment-form textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; min-height: 80px; font-family: inherit; }
+        .comment-form textarea:focus { border-color: #ff6b00; outline: none; }
+        .btn { padding: 10px 24px; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; }
+        .btn-orange { background: #ff6b00; color: #fff; }
+        .btn-orange:hover { background: #e55f00; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1><a href="index.html">🔥 TorrentHub</a></h1>
+    </div>
+
+    <div class="nav">
+        <a href="index.html">← Home</a>
+        <a href="upload.html">📤 Upload</a>
+        <a href="#">Forum</a>
+        <a href="#">Categories</a>
+    </div>
+
+    <div class="container" id="mainContainer">
+        <div class="loading">⏳ Loading torrent details...</div>
+    </div>
+
+    <script>
+        const API_URL = 'https://torrenthub-api.serafimkoragin-b12.workers.dev';
+
+        // ---------- Get torrent ID from URL ----------
+        function getTorrentId() {
+            const params = new URLSearchParams(window.location.search);
+            return params.get('id');
+        }
+
+        // ---------- Load Torrent ----------
+        async function loadTorrent() {
+            const container = document.getElementById('mainContainer');
+            const torrentId = getTorrentId();
+
+            if (!torrentId) {
+                container.innerHTML = `<div class="error-box">❌ No torrent ID specified.</div>`;
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_URL}/api/torrents/${torrentId}`);
+                if (!res.ok) throw new Error('Torrent not found');
+                const data = await res.json();
+
+                if (!data.success) throw new Error(data.error || 'Failed to load');
+
+                const t = data.torrent;
+                const fileSize = formatFileSize(t.file_size || 0);
+                const seeders = t.seeders || 0;
+                const leechers = t.leechers || 0;
+
+                let commentsHtml = '';
+                if (t.comments && t.comments.length > 0) {
+                    t.comments.forEach(c => {
+                        commentsHtml += `
+                            <div class="comment">
+                                <div class="author">${c.nickname || c.username}</div>
+                                <div class="content">${c.content}</div>
+                            </div>
+                        `;
+                    });
+                } else {
+                    commentsHtml = '<p style="color:#999;">No comments yet. Be the first!</p>';
+                }
+
+                const isLoggedIn = !!localStorage.getItem('torrenthub_token');
+
+                container.innerHTML = `
+                    <div class="torrent-detail">
+                        <h2>${t.title}</h2>
+                        <div class="meta">
+                            <span>📂 ${t.category || 'General'}</span>
+                            <span>📦 ${fileSize}</span>
+                            <span class="seeders" style="color:#28a745;">🟢 ${seeders} seeders</span>
+                            <span class="leechers" style="color:#dc3545;">🔴 ${leechers} leechers</span>
+                            <span>👤 ${t.nickname || t.username}</span>
+                            <span>📅 ${new Date(t.created_at).toLocaleDateString()}</span>
+                        </div>
+
+                        <a href="/api/torrents/${t.id}/download" class="download-btn" target="_blank">
+                            ⬇️ DOWNLOAD NOW
+                            <span class="sub">🔒 Only from this button — no ads, no trackers</span>
+                        </a>
+                        <span class="no-ads-badge">✅ NO ADS</span>
+
+                        <div class="description">
+                            <strong>📝 Description</strong><br>
+                            ${t.description || 'No description provided.'}
+                        </div>
+
+                        <div class="comments-section">
+                            <h3>💬 Comments</h3>
+                            <div id="commentsList">${commentsHtml}</div>
+                            ${isLoggedIn ? `
+                                <div class="comment-form">
+                                    <textarea id="commentContent" placeholder="Write a comment..."></textarea>
+                                    <button class="btn btn-orange" onclick="addComment()">Post Comment</button>
+                                </div>
+                            ` : `
+                                <p style="color:#999;margin-top:15px;">
+                                    <a href="login.html">Log in</a> to comment.
+                                </p>
+                            `}
+                        </div>
+
+                        <a href="index.html" class="back-link">← Back to torrents</a>
+                    </div>
+                `;
+
+            } catch (err) {
+                container.innerHTML = `<div class="error-box">❌ ${err.message}</div>`;
+                console.error('Load torrent error:', err);
+            }
+        }
+
+        // ---------- Add Comment ----------
+        async function addComment() {
+            const content = document.getElementById('commentContent').value.trim();
+            if (!content) { alert('Please write something.'); return; }
+
+            const token = localStorage.getItem('torrenthub_token');
+            if (!token) { window.location.href = 'login.html'; return; }
+
+            const torrentId = getTorrentId();
+            if (!torrentId) return;
+
+            try {
+                const res = await fetch(`${API_URL}/api/torrents/comment`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ torrent_id: parseInt(torrentId), content })
+                });
+
+                const data = await res.json();
+                if (data.success) {
+                    document.getElementById('commentContent').value = '';
+                    loadTorrent(); // Reload to show new comment
+                } else {
+                    alert('Failed to post comment: ' + (data.error || 'Unknown error'));
+                }
+            } catch (err) {
+                alert('Network error: ' + err.message);
+            }
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return 'Unknown';
+            const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(1024));
+            return (bytes / Math.pow(1024, i)).toFixed(1) + ' ' + sizes[i];
+        }
+
+        // ---------- Load on page load ----------
+        loadTorrent();
+    </script>
+</body>
+</html>
