@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload - TorrentHub</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #e8e4e0; color: #333; }
+        .header { background: #ff6b00; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; }
+        .header h1 { color: #fff; font-size: 24px; }
+        .header h1 a { color: #fff; text-decoration: none; }
+        .nav { background: #2c2c2c; padding: 10px 20px; }
+        .nav a { color: #ccc; text-decoration: none; margin-right: 20px; font-size: 14px; }
+        .nav a:hover { color: #ff6b00; }
+        .nav a.active { color: #ff6b00; }
+        .container { max-width: 700px; margin: 30px auto; padding: 0 20px; }
+        .upload-box { background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .upload-box h2 { color: #333; margin-bottom: 20px; border-bottom: 2px solid #ff6b00; padding-bottom: 10px; }
+        .input-group { margin-bottom: 18px; }
+        .input-group label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 14px; color: #555; }
+        .input-group input, .input-group select, .input-group textarea {
+            width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;
+            font-family: inherit;
+        }
+        .input-group textarea { resize: vertical; min-height: 100px; }
+        .input-group input:focus, .input-group select:focus, .input-group textarea:focus {
+            border-color: #ff6b00; outline: none;
+        }
+        .btn { padding: 12px 30px; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 16px; }
+        .btn-orange { background: #ff6b00; color: #fff; }
+        .btn-orange:hover { background: #e55f00; }
+        .btn-gray { background: #6c757d; color: #fff; }
+        .btn-gray:hover { background: #5a6268; }
+        .error-text { color: #dc3545; font-size: 13px; margin-top: 5px; display: none; }
+        .error-text.active { display: block; }
+        .success-text { color: #28a745; font-size: 13px; margin-top: 5px; display: none; }
+        .success-text.active { display: block; }
+        .file-info { background: #f8f9fa; padding: 10px; border-radius: 4px; margin-top: 5px; font-size: 13px; color: #666; }
+        .tutorial-box { background: #f1f3f5; padding: 20px; border-radius: 8px; margin-bottom: 25px; }
+        .tutorial-box h4 { color: #333; margin-bottom: 10px; }
+        .tutorial-box ol { padding-left: 20px; color: #555; line-height: 1.8; }
+        .tutorial-box ol li { margin-bottom: 5px; }
+        .loading { text-align: center; padding: 20px; color: #666; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1><a href="index.html">🔥 TorrentHub</a></h1>
+        <div class="user-panel" id="userPanel">
+            <a href="login.html">Log In</a>
+            <a href="login.html">Register</a>
+        </div>
+    </div>
+
+    <div class="nav">
+        <a href="index.html">Home</a>
+        <a href="upload.html" class="active">📤 Upload</a>
+        <a href="#">Forum</a>
+        <a href="#">Categories</a>
+        <a href="#">Top 100</a>
+        <a href="#">Rules</a>
+        <a href="#">Help</a>
+    </div>
+
+    <div class="container">
+        <div class="upload-box">
+            <h2>📤 Upload a Torrent</h2>
+
+            <div class="tutorial-box">
+                <h4>📖 How to upload:</h4>
+                <ol>
+                    <li><strong>Title</strong> — Give your torrent a clear, descriptive name.</li>
+                    <li><strong>Category</strong> — Select the category that best fits your content.</li>
+                    <li><strong>Description</strong> — Add details about what the torrent contains.</li>
+                    <li><strong>Magnet Link</strong> — Paste your magnet link or torrent hash.</li>
+                    <li><strong>File Size</strong> — Enter the total size of the content (optional).</li>
+                    <li>Click <strong>Upload</strong> — Your torrent will be published immediately!</li>
+                </ol>
+                <p style="margin-top:10px;color:#666;font-size:13px;">
+                    ⚠️ <strong>Note:</strong> Only upload content you have the right to share.
+                    All uploads are reviewed by the community.
+                </p>
+            </div>
+
+            <div class="error-text" id="uploadError"></div>
+            <div class="success-text" id="uploadSuccess"></div>
+
+            <form id="uploadForm" onsubmit="uploadTorrent(event)">
+                <div class="input-group">
+                    <label>Title *</label>
+                    <input type="text" id="title" placeholder="e.g., Ubuntu 24.04 LTS Desktop ISO" required>
+                </div>
+
+                <div class="input-group">
+                    <label>Category *</label>
+                    <select id="category" required>
+                        <option value="">Select category...</option>
+                        <option value="Software">💿 Software</option>
+                        <option value="Movies">🎬 Movies</option>
+                        <option value="TV Shows">📺 TV Shows</option>
+                        <option value="Games">🎮 Games</option>
+                        <option value="Music">🎵 Music</option>
+                        <option value="Books">📚 Books</option>
+                        <option value="Education">🎓 Education</option>
+                        <option value="Other">📁 Other</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label>Description *</label>
+                    <textarea id="description" placeholder="Describe what this torrent contains..." required></textarea>
+                </div>
+
+                <div class="input-group">
+                    <label>Magnet Link or Info Hash</label>
+                    <input type="text" id="info_hash" placeholder="magnet:?xt=urn:btih:... or just the hash">
+                    <div class="file-info">Paste a magnet link or just the torrent hash.</div>
+                </div>
+
+                <div class="input-group">
+                    <label>File Size (optional)</label>
+                    <input type="text" id="file_size" placeholder="e.g., 4.5 GB, 890 MB">
+                    <div class="file-info">Enter the total size of the content.</div>
+                </div>
+
+                <div style="display:flex; gap:15px; flex-wrap:wrap; margin-top:10px;">
+                    <button type="submit" class="btn btn-orange" id="uploadBtn">📤 Upload Torrent</button>
+                    <button type="reset" class="btn btn-gray">↺ Clear</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div style="text-align:center;padding:20px;color:#666;font-size:13px;">
+        <p>No ads. No trackers. Just community.</p>
+        <p>© 2026 TorrentHub</p>
+    </div>
+
+    <script>
+        const API_URL = 'https://torrenthub-api.serafimkoragin-b12.workers.dev';
+
+        // ---------- Check Login ----------
+        async function checkLogin() {
+            const token = localStorage.getItem('torrenthub_token');
+            const userPanel = document.getElementById('userPanel');
+
+            if (!token) {
+                userPanel.innerHTML = `
+                    <a href="login.html">Log In</a>
+                    <a href="login.html">Register</a>
+                `;
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_URL}/api/auth/me`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+
+                if (!data.success) {
+                    localStorage.removeItem('torrenthub_token');
+                    userPanel.innerHTML = `
+                        <a href="login.html">Log In</a>
+                        <a href="login.html">Register</a>
+                    `;
+                    return;
+                }
+
+                userPanel.innerHTML = `
+                    <div class="user-dropdown" style="position:relative;display:inline-block;">
+                        <button class="user-dropdown-btn" style="background:#fff;color:#ff6b00;padding:8px 16px;border-radius:4px;cursor:pointer;font-weight:600;border:none;font-size:14px;">
+                            👤 ${data.user.nickname}
+                        </button>
+                        <div class="user-dropdown-content" style="display:none;position:absolute;right:0;background:#fff;min-width:200px;box-shadow:0 8px 16px rgba(0,0,0,0.2);border-radius:8px;z-index:100;padding:10px 0;">
+                            <div style="padding:10px 20px;border-bottom:1px solid #eee;font-weight:600;color:#333;">⭐ ${data.user.reputation || 0} pts</div>
+                            <a href="account.html" style="color:#333;padding:10px 20px;text-decoration:none;display:block;background:none;border:none;width:100%;text-align:left;cursor:pointer;font-size:14px;">👤 My Account</a>
+                            <a href="upload.html" style="color:#333;padding:10px 20px;text-decoration:none;display:block;background:none;border:none;width:100%;text-align:left;cursor:pointer;font-size:14px;">📤 Upload</a>
+                            <a href="settings.html" style="color:#333;padding:10px 20px;text-decoration:none;display:block;background:none;border:none;width:100%;text-align:left;cursor:pointer;font-size:14px;">⚙️ Settings</a>
+                            <a href="#" onclick="logout()" style="color:#333;padding:10px 20px;text-decoration:none;display:block;background:none;border:none;width:100%;text-align:left;cursor:pointer;font-size:14px;">🚪 Log Out</a>
+                        </div>
+                    </div>
+                `;
+
+                // Add hover toggle for dropdown
+                const container = userPanel.querySelector('.user-dropdown');
+                const content = container.querySelector('.user-dropdown-content');
+                container.addEventListener('mouseenter', () => content.style.display = 'block');
+                container.addEventListener('mouseleave', () => content.style.display = 'none');
+
+            } catch (err) {
+                userPanel.innerHTML = `
+                    <a href="login.html">Log In</a>
+                    <a href="login.html">Register</a>
+                `;
+            }
+        }
+
+        // ---------- Upload Torrent ----------
+        async function uploadTorrent(event) {
+            event.preventDefault();
+
+            const btn = document.getElementById('uploadBtn');
+            const errorEl = document.getElementById('uploadError');
+            const successEl = document.getElementById('uploadSuccess');
+
+            btn.disabled = true;
+            btn.textContent = 'Uploading...';
+            errorEl.classList.remove('active');
+            successEl.classList.remove('active');
+
+            const title = document.getElementById('title').value.trim();
+            const category = document.getElementById('category').value;
+            const description = document.getElementById('description').value.trim();
+            const info_hash = document.getElementById('info_hash').value.trim();
+            const file_size_raw = document.getElementById('file_size').value.trim();
+
+            if (!title || !category || !description) {
+                errorEl.textContent = 'Title, category, and description are required.';
+                errorEl.classList.add('active');
+                btn.disabled = false;
+                btn.textContent = '📤 Upload Torrent';
+                return;
+            }
+
+            const token = localStorage.getItem('torrenthub_token');
+            if (!token) {
+                errorEl.textContent = 'You must be logged in to upload.';
+                errorEl.classList.add('active');
+                btn.disabled = false;
+                btn.textContent = '📤 Upload Torrent';
+                return;
+            }
+
+            // Parse file size
+            let fileSize = 0;
+            if (file_size_raw) {
+                const match = file_size_raw.match(/^([\d.]+)\s*(GB|MB|TB|KB)?$/i);
+                if (match) {
+                    const num = parseFloat(match[1]);
+                    const unit = (match[2] || 'MB').toUpperCase();
+                    const multipliers = { KB: 1024, MB: 1024 * 1024, GB: 1024 * 1024 * 1024, TB: 1024 * 1024 * 1024 * 1024 };
+                    fileSize = num * (multipliers[unit] || 1);
+                }
+            }
+
+            try {
+                const res = await fetch(`${API_URL}/api/torrents/upload`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        title,
+                        category,
+                        description,
+                        info_hash: info_hash || '',
+                        file_size: fileSize,
+                        magnet_link: info_hash || ''
+                    })
+                });
+
+                const data = await res.json();
+
+                if (data.success) {
+                    successEl.textContent = '✅ Torrent uploaded successfully! Redirecting...';
+                    successEl.classList.add('active');
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 2000);
+                } else {
+                    errorEl.textContent = data.error || 'Upload failed.';
+                    errorEl.classList.add('active');
+                }
+            } catch (err) {
+                errorEl.textContent = 'Network error: ' + err.message;
+                errorEl.classList.add('active');
+            }
+
+            btn.disabled = false;
+            btn.textContent = '📤 Upload Torrent';
+        }
+
+        // ---------- Logout ----------
+        function logout() {
+            const token = localStorage.getItem('torrenthub_token');
+            if (token) {
+                fetch(`${API_URL}/api/auth/logout`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                }).catch(() => {});
+            }
+            localStorage.removeItem('torrenthub_token');
+            localStorage.removeItem('torrenthub_user');
+            window.location.href = 'index.html';
+        }
+
+        checkLogin();
+    </script>
+</body>
+</html>
