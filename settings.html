@@ -199,6 +199,7 @@
             justify-content: center;
             color: #999;
             font-size: 14px;
+            overflow: hidden;
         }
         .bg-preview img {
             width: 100%;
@@ -243,7 +244,6 @@
         const API_URL = 'https://torrenthub-api.serafimkoragin-b12.workers.dev';
         let currentSettings = {};
         let token = null;
-        let uploadedImageDataURL = null;
 
         async function loadSettings() {
             const container = document.getElementById('mainContainer');
@@ -279,8 +279,6 @@
             const s = currentSettings;
             const container = document.getElementById('mainContainer');
 
-            // Check if bg_image is a data URL or regular URL
-            const bgImageDisplay = s.bg_image || '';
             const bgPreviewContent = s.bg_image ?
                 `<img src="${s.bg_image}" alt="Background preview" />` :
                 'No image uploaded. Use URL or upload a file.';
@@ -322,7 +320,7 @@
                     </div>
                     <div class="setting-row">
                         <label>Or Enter URL</label>
-                        <input type="url" id="bgImage" value="${bgImageDisplay}" placeholder="https://example.com/image.jpg" oninput="updatePreview()" />
+                        <input type="url" id="bgImage" value="${s.bg_image || ''}" placeholder="https://example.com/image.jpg" oninput="updatePreview()" />
                     </div>
                     <div class="setting-row" style="border-bottom:none;">
                         <label>Preview</label>
@@ -386,17 +384,15 @@
 
             const reader = new FileReader();
             reader.onload = function(e) {
-                uploadedImageDataURL = e.target.result;
-                document.getElementById('bgImage').value = uploadedImageDataURL;
-                currentSettings.bg_image = uploadedImageDataURL;
+                const dataUrl = e.target.result;
+                document.getElementById('bgImage').value = dataUrl;
+                currentSettings.bg_image = dataUrl;
                 currentSettings.bg_enabled = true;
-                // Toggle on if off
                 const toggle = document.querySelector('#mainContainer .toggle-switch');
                 if (!toggle.classList.contains('active')) {
                     toggle.classList.add('active');
                 }
                 updatePreview();
-                // Show success message
                 showTemporaryMessage('✅ Image uploaded! Click Save to apply.');
             };
             reader.readAsDataURL(file);
@@ -454,9 +450,7 @@
 
                 if (data.success) {
                     showTemporaryMessage('✅ Settings saved successfully!');
-                    // Apply to header
                     document.querySelector('.header').style.background = themeColor;
-                    // Store in localStorage
                     localStorage.setItem('torrenthub_theme', themeColor);
                     localStorage.setItem('torrenthub_animations', animations);
                     localStorage.setItem('torrenthub_bg', bgEnabled && bgImage ? bgImage : 'none');
