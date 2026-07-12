@@ -153,7 +153,6 @@
             padding: 20px;
         }
         
-        /* Torrent List */
         .torrent-list { 
             margin-top: 20px;
         }
@@ -360,7 +359,7 @@
                     return;
                 }
 
-                // Load settings
+                // Load settings and apply them
                 const settingsRes = await fetch(`${API_URL}/api/auth/settings`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
@@ -377,9 +376,6 @@
                             <a href="account.html">👤 My Account</a>
                             <a href="upload.html">📤 Upload</a>
                             <a href="settings.html">⚙️ Settings</a>
-                            <a href="#" onclick="toggleTheme()">🎨 Theme</a>
-                            <a href="#" onclick="toggleAnimations()">✨ Animations</a>
-                            <a href="#" onclick="changeBackground()">🖼️ Background</a>
                             <a href="#" onclick="logout()">🚪 Log Out</a>
                         </div>
                     </div>
@@ -398,7 +394,7 @@
             if (settings.theme_color) {
                 document.querySelector('.header').style.background = settings.theme_color;
                 document.querySelector('.search-bar button').style.background = settings.theme_color;
-                document.querySelectorAll('.category-header, .torrent-header').forEach(el => {
+                document.querySelectorAll('.torrent-header').forEach(el => {
                     el.style.background = settings.theme_color;
                 });
             }
@@ -415,76 +411,6 @@
             } else {
                 document.body.style.transition = 'all 0.3s ease';
             }
-        }
-
-        // ---------- Theme Toggles ----------
-        let currentTheme = localStorage.getItem('torrenthub_theme') || 'light';
-        let animationsEnabled = localStorage.getItem('torrenthub_animations') !== 'false';
-        let currentBg = localStorage.getItem('torrenthub_bg') || 'none';
-
-        function applyTheme() {
-            const themeColors = { light: '#ff6b00', dark: '#2c2c2c', orange: '#ff8533' };
-            const color = themeColors[currentTheme] || '#ff6b00';
-            document.querySelector('.header').style.background = color;
-            document.querySelector('.search-bar button').style.background = color;
-            document.querySelectorAll('.torrent-header').forEach(el => { el.style.background = color; });
-            saveSetting('theme_color', color);
-        }
-
-        function toggleTheme() {
-            const themes = ['light', 'dark', 'orange'];
-            const idx = themes.indexOf(currentTheme);
-            currentTheme = themes[(idx + 1) % themes.length];
-            localStorage.setItem('torrenthub_theme', currentTheme);
-            applyTheme();
-        }
-
-        function toggleAnimations() {
-            animationsEnabled = !animationsEnabled;
-            localStorage.setItem('torrenthub_animations', animationsEnabled);
-            document.body.style.transition = animationsEnabled ? 'all 0.3s ease' : 'none';
-            saveSetting('animations', animationsEnabled);
-            alert(animationsEnabled ? 'Animations enabled!' : 'Animations disabled!');
-        }
-
-        function changeBackground() {
-            const bgs = ['none', 'https://images.unsplash.com/photo-1557683316-973673baf926?w=1920', 'https://images.unsplash.com/photo-1579546929518-9e396f3cc809?w=1920'];
-            const idx = bgs.indexOf(currentBg);
-            currentBg = bgs[(idx + 1) % bgs.length];
-            localStorage.setItem('torrenthub_bg', currentBg);
-
-            if (currentBg === 'none') {
-                document.body.style.backgroundImage = 'none';
-                document.body.style.background = '#e8e4e0';
-                saveSetting('bg_enabled', false);
-                saveSetting('bg_image', '');
-            } else {
-                document.body.style.backgroundImage = `url(${currentBg})`;
-                document.body.style.backgroundSize = 'cover';
-                document.body.style.backgroundAttachment = 'fixed';
-                saveSetting('bg_enabled', true);
-                saveSetting('bg_image', currentBg);
-            }
-        }
-
-        async function saveSetting(key, value) {
-            const token = localStorage.getItem('torrenthub_token');
-            if (!token) return;
-            try {
-                const current = await fetch(`${API_URL}/api/auth/settings`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                }).then(r => r.json());
-                const settings = current.settings || {};
-                settings[key] = value;
-                await fetch(`${API_URL}/api/auth/settings`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify(settings)
-                });
-            } catch (e) { console.error('Failed to save setting:', e); }
         }
 
         // ---------- Load Torrents ----------
@@ -614,19 +540,29 @@
             window.location.reload();
         }
 
-        // ---------- Apply saved settings ----------
-        if (localStorage.getItem('torrenthub_theme')) applyTheme();
-        if (localStorage.getItem('torrenthub_animations') === 'false') {
-            document.body.style.transition = 'none';
-        }
-        if (localStorage.getItem('torrenthub_bg') && localStorage.getItem('torrenthub_bg') !== 'none') {
-            const bg = localStorage.getItem('torrenthub_bg');
-            document.body.style.backgroundImage = `url(${bg})`;
-            document.body.style.backgroundSize = 'cover';
-            document.body.style.backgroundAttachment = 'fixed';
+        // ---------- Apply saved settings (localStorage fallback) ----------
+        function applyLocalSettings() {
+            if (localStorage.getItem('torrenthub_theme')) {
+                const color = localStorage.getItem('torrenthub_theme');
+                document.querySelector('.header').style.background = color;
+                document.querySelector('.search-bar button').style.background = color;
+                document.querySelectorAll('.torrent-header').forEach(el => {
+                    el.style.background = color;
+                });
+            }
+            if (localStorage.getItem('torrenthub_animations') === 'false') {
+                document.body.style.transition = 'none';
+            }
+            if (localStorage.getItem('torrenthub_bg') && localStorage.getItem('torrenthub_bg') !== 'none') {
+                const bg = localStorage.getItem('torrenthub_bg');
+                document.body.style.backgroundImage = `url(${bg})`;
+                document.body.style.backgroundSize = 'cover';
+                document.body.style.backgroundAttachment = 'fixed';
+            }
         }
 
         // ---------- Load everything ----------
+        applyLocalSettings();
         checkLogin();
         loadTorrents();
     </script>
