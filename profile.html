@@ -21,6 +21,7 @@
         body.dark-mode .reputation-item { background: #1a1a2e; }
         body.dark-mode .badge-item { background: #1a1a2e; }
         body.dark-mode .profile-bio { border-top-color: #444; }
+        body.dark-mode .copy-btn { background: #444; color: #e0e0e0; }
 
         .header { background: #ff6b00; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; transition: background 0.3s; }
         .header h1 { color: #fff; font-size: 24px; }
@@ -29,28 +30,34 @@
         .nav a { color: #ccc; text-decoration: none; font-size: 14px; font-weight: 500; }
         .nav a:hover { color: #ff6b00; }
         .container { max-width: 900px; margin: 30px auto; padding: 0 20px; }
-        .profile-card { background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 20px; transition: background 0.3s; }
-        .profile-header { display: flex; align-items: center; gap: 25px; flex-wrap: wrap; }
-        .profile-avatar { width: 100px; height: 100px; border-radius: 50%; background: #ff6b00; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 48px; font-weight: 700; flex-shrink: 0; overflow: hidden; }
+        .profile-card { background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 20px; transition: background 0.3s; position: relative; overflow: hidden; }
+        .cover-image { width: 100%; height: 150px; object-fit: cover; border-radius: 8px 8px 0 0; margin-bottom: -50px; }
+        .profile-header { display: flex; align-items: center; gap: 25px; flex-wrap: wrap; padding: 0 30px; }
+        .profile-avatar { width: 100px; height: 100px; border-radius: 50%; background: #ff6b00; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 48px; font-weight: 700; flex-shrink: 0; overflow: hidden; border: 4px solid #fff; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
         .profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
         .profile-info { flex: 1; }
-        .profile-info h2 { margin-bottom: 5px; }
+        .profile-info h2 { margin-bottom: 5px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
         .profile-info .username { color: #888; font-size: 14px; margin-bottom: 8px; }
         .profile-info .meta { font-size: 14px; color: #888; display: flex; gap: 20px; flex-wrap: wrap; }
         .profile-info .meta a { color: #ff6b00; text-decoration: none; }
         .profile-info .meta a:hover { text-decoration: underline; }
         .profile-info .reputation { font-size: 28px; font-weight: 700; color: #ff6b00; margin-top: 10px; }
         .profile-bio { margin-top: 15px; padding-top: 15px; border-top: 1px solid #eee; }
-        .profile-actions { margin-top: 15px; display: flex; gap: 10px; flex-wrap: wrap; }
-        .profile-actions .btn { padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; text-decoration: none; }
+        .profile-actions { margin-top: 15px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+        .profile-actions .btn { padding: 8px 18px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s; font-size: 14px; }
         .btn-primary { background: #ff6b00; color: #fff; }
-        .btn-primary:hover { background: #e55f00; }
+        .btn-primary:hover { background: #e55f00; transform: scale(1.02); }
         .btn-secondary { background: #6c757d; color: #fff; }
-        .btn-secondary:hover { background: #5a6268; }
+        .btn-secondary:hover { background: #5a6268; transform: scale(1.02); }
         .btn-success { background: #28a745; color: #fff; }
-        .btn-success:hover { background: #218838; }
+        .btn-success:hover { background: #218838; transform: scale(1.02); }
         .btn-danger { background: #dc3545; color: #fff; }
-        .btn-danger:hover { background: #c82333; }
+        .btn-danger:hover { background: #c82333; transform: scale(1.02); }
+        .btn-outline { background: transparent; border: 2px solid #ff6b00; color: #ff6b00; }
+        .btn-outline:hover { background: #ff6b00; color: #fff; }
+        .copy-btn { background: #f0f0f0; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; transition: 0.2s; }
+        .copy-btn:hover { background: #ddd; }
+        .dnd-badge { display: inline-block; background: #dc3545; color: #fff; padding: 2px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; margin-left: 10px; }
 
         .section { margin-top: 25px; }
         .section h3 { border-bottom: 2px solid #ff6b00; padding-bottom: 10px; margin-bottom: 15px; }
@@ -80,16 +87,12 @@
         .dropdown:hover .dropdown-content { display: block; }
         .user-info { padding: 10px 20px; border-bottom: 1px solid #eee; font-weight: 600; color: #333; }
 
-        .cover-image { width: 100%; height: 150px; object-fit: cover; border-radius: 8px 8px 0 0; margin-bottom: -50px; }
-        .follow-stats { display: flex; gap: 20px; margin-top: 10px; font-size: 14px; color: #888; }
-        .follow-stats span { cursor: pointer; }
-        .follow-stats span:hover { color: #ff6b00; }
-
         @media (max-width: 600px) {
-            .profile-header { flex-direction: column; text-align: center; }
+            .profile-header { flex-direction: column; text-align: center; padding: 0 15px; }
             .profile-avatar { width: 80px; height: 80px; font-size: 32px; }
             .profile-info .meta { justify-content: center; }
             .profile-actions { justify-content: center; }
+            .cover-image { height: 100px; }
         }
     </style>
 </head>
@@ -119,6 +122,7 @@
 
     <script>
         const API_URL = 'https://torrenthub-api.serafimkoragin-b12.workers.dev';
+        let currentUserId = null;
 
         // ---------- SETTINGS ----------
         function applySettings(settings) {
@@ -251,6 +255,7 @@
                 return;
             }
 
+            currentUserId = parseInt(userId);
             container.innerHTML = '<div style="text-align:center;padding:40px;color:#888;">Loading...</div>';
 
             try {
@@ -292,6 +297,8 @@
             const memberDate = new Date(user.created_at).toLocaleDateString();
             const isOwnProfile = currentUser && currentUser.id === user.id;
             const isFollowing = following.some(f => f.id === (currentUser ? currentUser.id : -1));
+            const dnd = user.dnd === 1;
+            const allowMessages = user.allow_messages !== undefined ? user.allow_messages : 1;
 
             let coverHtml = '';
             if (user.cover_image) {
@@ -318,6 +325,9 @@
                 if (user.github) socialHtml += `<a href="https://github.com/${user.github}" target="_blank">🐙 GitHub</a>`;
                 socialHtml += '</div>';
             }
+
+            // DND Badge
+            const dndBadgeHtml = dnd ? `<span class="dnd-badge">🔕 Do Not Disturb</span>` : '';
 
             // Badges
             let badgesHtml = '';
@@ -388,6 +398,27 @@
                 repHtml = '<div class="empty">No reputation changes yet.</div>';
             }
 
+            // Actions
+            let actionsHtml = '';
+            if (!isOwnProfile) {
+                actionsHtml = `
+                    <button class="btn btn-primary" onclick="followUser(${user.id})">
+                        ${isFollowing ? '✅ Unfollow' : '➕ Follow'}
+                    </button>
+                    ${allowMessages === 1 ? 
+                        `<a href="messages.html?to=${user.id}" class="btn btn-success">💬 Message</a>` :
+                        `<button class="btn btn-secondary" disabled style="cursor:not-allowed;opacity:0.6;">💬 Messages disabled</button>`
+                    }
+                    <button class="btn btn-secondary" onclick="copyUserId(${user.id})">📋 Copy ID</button>
+                    <button class="btn btn-secondary" onclick="alert('📞 Calling feature coming soon!')">📞 Call</button>
+                `;
+            } else {
+                actionsHtml = `
+                    <a href="edit-profile.html" class="btn btn-primary">✏️ Edit Profile</a>
+                    <button class="btn btn-secondary" onclick="copyUserId(${user.id})">📋 Copy My ID</button>
+                `;
+            }
+
             container.innerHTML = `
                 <div class="profile-card" style="padding-top:0;overflow:hidden;">
                     ${coverHtml}
@@ -395,27 +426,20 @@
                         <div class="profile-header">
                             <div class="profile-avatar">${avatarHtml}</div>
                             <div class="profile-info">
-                                <h2>${user.nickname || user.username}</h2>
+                                <h2>${user.nickname || user.username} ${dndBadgeHtml}</h2>
                                 <div class="username">@${user.username}</div>
                                 <div class="meta">
                                     <span>📅 Joined ${memberDate}</span>
                                     ${user.location ? `<span>📍 ${user.location}</span>` : ''}
                                     ${user.website ? `<span>🔗 <a href="${user.website}" target="_blank">Website</a></span>` : ''}
                                 </div>
-                                <div class="follow-stats">
+                                <div class="follow-stats" style="display:flex;gap:20px;margin-top:10px;font-size:14px;color:#888;">
                                     <span onclick="showFollowers(${user.id})">👥 ${followers.length} followers</span>
                                     <span onclick="showFollowing(${user.id})">👤 ${following.length} following</span>
                                 </div>
                                 <div class="reputation">⭐ ${user.reputation || 0} reputation</div>
                                 <div class="profile-actions">
-                                    ${!isOwnProfile ? `
-                                        <button class="btn btn-primary" onclick="followUser(${user.id})">
-                                            ${isFollowing ? '✅ Unfollow' : '➕ Follow'}
-                                        </button>
-                                        <a href="messages.html?to=${user.id}" class="btn btn-secondary">💬 Message</a>
-                                    ` : `
-                                        <a href="edit-profile.html" class="btn btn-primary">✏️ Edit Profile</a>
-                                    `}
+                                    ${actionsHtml}
                                 </div>
                             </div>
                         </div>
@@ -470,6 +494,21 @@
             } catch (err) {
                 alert('Network error');
             }
+        }
+
+        function copyUserId(userId) {
+            navigator.clipboard.writeText(userId).then(() => {
+                alert('✅ User ID copied to clipboard!');
+            }).catch(() => {
+                // Fallback
+                const input = document.createElement('input');
+                input.value = userId;
+                document.body.appendChild(input);
+                input.select();
+                document.execCommand('copy');
+                document.body.removeChild(input);
+                alert('✅ User ID copied to clipboard!');
+            });
         }
 
         function showFollowers(userId) {
